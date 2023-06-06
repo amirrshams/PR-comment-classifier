@@ -34,7 +34,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 from tqdm.auto import tqdm
 
 #reading the data
-df = pd.read_csv('/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Dataset/Dataset/Non_Merged/Sample/Sample_2_500_manual.csv')
+df = pd.read_csv('/home/a2shamso/projects/def-m2nagapp/a2shamso/pr_classification/dataset/Sample_2000_manual.csv')
 
 df = df.drop(['api_url', ' url', 'pr_url', 'pr_api_url', 'author_id', 'author_desc_body', 'closer_id','commit_counts', 'code_changes_counts', 'created_at', 'closed_at', 'author_country', 'author_continent', 'same_country', 'author_eth', 'closer_eth','closer_country', 'same_eth', 'prs_white', 'prs_black', 'prs_api', 'prs_hispanic', 'pri_white', 'pri_black', 'pri_api', 'pri_hispanic', 'prs_eth_7', 'prs_eth_8', 'prs_eth_9', 'prs_eth_diff', 'prs_eth_diff_2'], axis=1)
 
@@ -198,7 +198,53 @@ def train_modified(model, train_data, val_data, learning_rate, epochs):
             | Val Accuracy: {total_acc_val / len(val_data): .3f}')
               
     
+def evaluate(model, test_data):
+
+    test = PRDataset(test_data)
+
+    test_dataloader = DataLoader(test, batch_size=2)
+
+    use_cuda = torch.cuda.is_available()
+    device = torch.device("cuda" if use_cuda else "cpu")
+
+    model = model.to(device)
+
+    y_true = []
+    y_pred = []
+    total_acc_test = 0
+
+    with torch.no_grad():
+
+        for test_input, test_label in test_dataloader:
+
+            test_label = test_label.to(device)
+            mask = test_input['attention_mask'].to(device)
+            input_id = test_input['input_ids'].squeeze(1).to(device)
+
+            output = model(input_id, mask)
+
+            # Compute predictions
+            batch_pred = output.argmax(dim=1).cpu().numpy()
+            batch_true = test_label.cpu().numpy()
+
+            y_pred.extend(batch_pred.tolist())
+            y_true.extend(batch_true.tolist())
+
+            # Compute accuracy
+            acc = (batch_pred == batch_true).sum().item()
+            total_acc_test += acc
+
+    # Compute metrics
+    accuracy = total_acc_test / len(test_data)
+    report = classification_report(y_true, y_pred, zero_division=0)
+
+    print(f'Test Accuracy: {accuracy:.3f}')
+    print(f"Classification Report: {report}")
+
 
 
 model = BertClassifier()
 train_modified(model, df_train, df_val, 1e-6, 20)
+
+evaluate(model, df_test)
+
