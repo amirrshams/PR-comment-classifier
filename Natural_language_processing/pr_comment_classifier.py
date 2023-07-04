@@ -34,7 +34,6 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 
 from tqdm.auto import tqdm
 
-print("Code is running")
 #reading the data
 df = pd.read_csv('/home/a2shamso/projects/def-m2nagapp/a2shamso/pr_classification/dataset/Sample_5000_manual.csv')
 
