@@ -17,6 +17,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, multilabel_confusion_matrix
 from sklearn.preprocessing import LabelEncoder
 
+
 import re
 import string
 import ast
@@ -33,8 +34,9 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 
 from tqdm.auto import tqdm
 
+print("Code is running")
 #reading the data
-df = pd.read_csv('/home/a2shamso/projects/def-m2nagapp/a2shamso/pr_classification/dataset/Sample_2000_manual.csv')
+df = pd.read_csv('/home/a2shamso/projects/def-m2nagapp/a2shamso/pr_classification/dataset/Sample_5000_manual.csv')
 
 df = df.drop(['api_url', ' url', 'pr_url', 'pr_api_url', 'author_id', 'author_desc_body', 'closer_id','commit_counts', 'code_changes_counts', 'created_at', 'closed_at', 'author_country', 'author_continent', 'same_country', 'author_eth', 'closer_eth','closer_country', 'same_eth', 'prs_white', 'prs_black', 'prs_api', 'prs_hispanic', 'pri_white', 'pri_black', 'pri_api', 'pri_hispanic', 'prs_eth_7', 'prs_eth_8', 'prs_eth_9', 'prs_eth_diff', 'prs_eth_diff_2'], axis=1)
 
@@ -42,13 +44,13 @@ df = df.drop(['api_url', ' url', 'pr_url', 'pr_api_url', 'author_id', 'author_de
 def text_preprocess(text):
     text = text.lower() # Convert to lowercase
     text = re.sub(r'@[A-Za-z0-9]+','',text) #remove @mentions
-    text = re.sub(r'#','',text) #remove # symbol
+   #text = re.sub(r'#','',text) #remove # symbol
     text = re.sub(r'https?:\/\/\S+','',text) #remove the hyper link
     text = re.sub(r'\n','',text) #remove \n
     text = re.sub(r'www\S+', '', text) #remove www
     text = re.sub(r'[^A-Za-z0-9 ]+', '', text)     # Handle special characters and symbols
     text = re.sub(r'\b([a-f0-9]{40})\b', 'Commit ID', text)
-    # text = text.translate(str.maketrans('', '', string.punctuation))     # Remove punctuation
+   #text = text.translate(str.maketrans('', '', string.punctuation))     # Remove punctuation
 
     return text
 df['comments'] = df['comments'].apply(lambda x: ast.literal_eval(x))
@@ -129,15 +131,15 @@ class BertClassifier(nn.Module):
 def train_modified(model, train_data, val_data, learning_rate, epochs):
     train_dataset, val_dataset = PRDataset(train_data), PRDataset(val_data)
 
-    train_dataloader = DataLoader(train_dataset, batch_size = 8, shuffle = True)
-    val_dataloader = DataLoader(val_dataset, batch_size=8)
+    train_dataloader = DataLoader(train_dataset, batch_size = 2, shuffle = True)
+    val_dataloader = DataLoader(val_dataset, batch_size=2)
 
     use_cuda = torch.cuda.is_available()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     criterion = nn.CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lr = learning_rate)
-    scheduler = scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=2, verbose=True)
+    #scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=2, verbose=True)
 
 
     model = model.to(device)
@@ -244,7 +246,7 @@ def evaluate(model, test_data):
 
 
 model = BertClassifier()
-train_modified(model, df_train, df_val, 1e-6, 20)
+train_modified(model, df_train, df_val, 1e-5, 20)
 
 evaluate(model, df_test)
 
