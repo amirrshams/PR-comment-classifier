@@ -5,7 +5,7 @@ import os
 os.environ['TORCH_USE_CUDA_DSA'] = '1'
 import torch
 import torch.nn as nn
-
+import wandb
 from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss
 from torch.utils.data import Dataset, DataLoader, random_split
 from torch.optim.lr_scheduler import ReduceLROnPlateau
@@ -30,9 +30,25 @@ import seaborn as sns
 # from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 # from pytorch_lightning.loggers import TensorBoardLogger
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
-
-
 from tqdm.auto import tqdm
+
+#Accessing Wandb
+os.environ['WANDB_API_KEY']='b3d44a1ccb9147d1d5c05f7769f5d4521796380e'
+os.environ['WANDB_ENTITY']='amirrshams'
+
+wandb.login()
+
+
+run = wandb.init(
+    # Set the project where this run will be logged
+    project="pr_classification",
+    # Track hyperparameters and run metadata
+    config={
+        "learning_rate": 1e-5,
+        "epochs": 100,
+        "batch size": 8,}
+    )
+
 
 #reading the data
 df = pd.read_csv('/home/a2shamso/projects/def-m2nagapp/a2shamso/pr_classification/dataset/Sample_5000_manual.csv')
@@ -129,9 +145,10 @@ class BertClassifier(nn.Module):
 def train_modified(model, train_data, val_data, learning_rate, epochs):
     train_dataset, val_dataset = PRDataset(train_data), PRDataset(val_data)
 
-    train_dataloader = DataLoader(train_dataset, batch_size = 16, shuffle = False)
-    val_dataloader = DataLoader(val_dataset, batch_size=16)
+    train_dataloader = DataLoader(train_dataset, batch_size = 8, shuffle = True)
+    val_dataloader = DataLoader(val_dataset, batch_size=8)
 
+    use_cuda = torch.cuda.is_available()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     criterion = nn.CrossEntropyLoss()
@@ -214,18 +231,20 @@ def train_modified(model, train_data, val_data, learning_rate, epochs):
             | Train Accuracy: {train_accuracy:.3f} \
             | Val Loss: {val_loss:.3f} \
             | Val Accuracy: {val_accuracy:.3f}')
+        
+        wandb.log({"Train Loss": train_loss, "Train Accuracy": train_accuracy ,"Val Loss":val_loss, "Val Accuracy":val_accuracy})
 
         #plotting
 
-    epochs_list = range(1, epochs + 1)
-    plt.plot(epochs_list, train_losses, label='Train Loss')
-    plt.plot(epochs_list, val_losses, label='Validation Loss')
-    plt.plot(epochs_list, train_accuracies, label = 'Train Accuracy')
-    plt.plot(epochs_list, val_accuracies, label = 'Validation Accuracy')
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    plt.legend()
-    plt.show()
+    # epochs_list = range(1, epochs + 1)
+    # plt.plot(epochs_list, train_losses, label='Train Loss')
+    # plt.plot(epochs_list, val_losses, label='Validation Loss')
+    # plt.plot(epochs_list, train_accuracies, label = 'Train Accuracy')
+    # plt.plot(epochs_list, val_accuracies, label = 'Validation Accuracy')
+    # plt.xlabel('Epochs')
+    # plt.ylabel('Loss')
+    # plt.legend()
+    # plt.show()
               
     
 def evaluate(model, test_data):
@@ -274,7 +293,7 @@ def evaluate(model, test_data):
 
 
 model = BertClassifier()
-train_modified(model, df_train, df_val, 1e-2, 100)
+train_modified(model, df_train, df_val, 1e-5, 100)
 
 evaluate(model, df_test)
 
