@@ -17,7 +17,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, multilabel_confusion_matrix
 from sklearn.preprocessing import LabelEncoder
 
-
 import re
 import string
 import ast
@@ -44,9 +43,11 @@ run = wandb.init(
     project="pr_classification",
     # Track hyperparameters and run metadata
     config={
-        "learning_rate": 1e-5,
-        "epochs": 100,
-        "batch size": 8,}
+        "learning_rate": 1e-8,
+        "epochs": 200,
+        "batch size": 24,
+        "Dropout": 0.2,
+        "train size":0.8,}
     )
 
 
@@ -122,11 +123,12 @@ print(len(df_train),len(df_val), len(df_test))
 
 #bert classifier class
 class BertClassifier(nn.Module):
+    
 
     def __init__(self):
         super(BertClassifier, self).__init__()
         self.bert = BertModel.from_pretrained('bert-base-uncased')
-        self.dropout1 = nn.Dropout(0.3)
+        self.dropout1 = nn.Dropout(0.2)
         #self.dropout2 = nn.Dropout(0.1) # added another dropout layer
         self.linear = nn.Linear(768, 11)
         # self.linear2 = nn.Linear(11, 11)
@@ -145,8 +147,8 @@ class BertClassifier(nn.Module):
 def train_modified(model, train_data, val_data, learning_rate, epochs):
     train_dataset, val_dataset = PRDataset(train_data), PRDataset(val_data)
 
-    train_dataloader = DataLoader(train_dataset, batch_size = 8, shuffle = True)
-    val_dataloader = DataLoader(val_dataset, batch_size=8)
+    train_dataloader = DataLoader(train_dataset, batch_size = 24, shuffle = True)
+    val_dataloader = DataLoader(val_dataset, batch_size=24)
 
     use_cuda = torch.cuda.is_available()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -167,7 +169,7 @@ def train_modified(model, train_data, val_data, learning_rate, epochs):
     train_accuracies = []
     val_accuracies = []
     for epoch_num in tqdm(range(epochs)):
-
+        
         total_acc_train = 0
         total_loss_train = 0
 
@@ -293,7 +295,7 @@ def evaluate(model, test_data):
 
 
 model = BertClassifier()
-train_modified(model, df_train, df_val, 1e-5, 100)
+train_modified(model, df_train, df_val, 1e-8, 200)
 
 evaluate(model, df_test)
 

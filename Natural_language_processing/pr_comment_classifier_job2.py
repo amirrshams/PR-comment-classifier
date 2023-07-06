@@ -44,9 +44,9 @@ run = wandb.init(
     project="pr_classification",
     # Track hyperparameters and run metadata
     config={
-        "learning_rate": 1e-5,
-        "epochs": 100,
-        "batch size": 2,}
+        "learning_rate": 1e-7,
+        "epochs": 200,
+        "batch size": 16,}
     )
 
 
@@ -126,7 +126,7 @@ class BertClassifier(nn.Module):
     def __init__(self):
         super(BertClassifier, self).__init__()
         self.bert = BertModel.from_pretrained('bert-base-uncased')
-        self.dropout1 = nn.Dropout(0.3)
+        self.dropout1 = nn.Dropout(0.2)
         #self.dropout2 = nn.Dropout(0.1) # added another dropout layer
         self.linear = nn.Linear(768, 11)
         # self.linear2 = nn.Linear(11, 11)
@@ -145,8 +145,8 @@ class BertClassifier(nn.Module):
 def train_modified(model, train_data, val_data, learning_rate, epochs):
     train_dataset, val_dataset = PRDataset(train_data), PRDataset(val_data)
 
-    train_dataloader = DataLoader(train_dataset, batch_size = 2, shuffle = True)
-    val_dataloader = DataLoader(val_dataset, batch_size=2)
+    train_dataloader = DataLoader(train_dataset, batch_size = 16, shuffle = True)
+    val_dataloader = DataLoader(val_dataset, batch_size=16)
 
     use_cuda = torch.cuda.is_available()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -293,7 +293,7 @@ def evaluate(model, test_data):
 
 
 model = BertClassifier()
-train_modified(model, df_train, df_val, 1e-5, 100)
+train_modified(model, df_train, df_val, 1e-7, 200)
 
 evaluate(model, df_test)
 
