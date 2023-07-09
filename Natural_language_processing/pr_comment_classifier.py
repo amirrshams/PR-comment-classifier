@@ -43,12 +43,12 @@ run = wandb.init(
     project="pr_classification",
     # Track hyperparameters and run metadata
     config={
-        "learning_rate": 1e-7,
+        "learning_rate": 1e-5,
         "epochs": 200,
-        "batch size": 24,
-        "Dropout": 0.2,
-        "train size":0.75,
-        "Activation function": "Relu"}
+        "batch size": 16,
+        "Dropout": 0.3,
+        "train size":0.7,
+        "Activation function": "Softmax"}
     )
 
 
@@ -113,11 +113,10 @@ class PRDataset(torch.utils.data.Dataset):
         return batch_comments, batch_y
         
 
-
 #splitting the data
 np.random.seed(112)
 
-df_train, df_remaining = train_test_split(df, test_size=0.25, random_state=42)
+df_train, df_remaining = train_test_split(df, test_size=0.3, random_state=42)
 df_val, df_test = train_test_split(df_remaining, test_size=0.5, random_state=42)
 
 print(len(df_train),len(df_val), len(df_test))
@@ -129,20 +128,20 @@ class BertClassifier(nn.Module):
     def __init__(self):
         super(BertClassifier, self).__init__()
         self.bert = BertModel.from_pretrained('bert-base-uncased')
-        self.dropout1 = nn.Dropout(0.2)
+        self.dropout1 = nn.Dropout(0.4)
         #self.dropout2 = nn.Dropout(0.1) # added another dropout layer
         self.linear = nn.Linear(768, 11)
         # self.linear2 = nn.Linear(11, 11)
-        # self.softmax = nn.Softmax(dim=1) # changed relu to softmax
-        self.relu = nn.ReLU()
+        self.softmax = nn.Softmax(dim=1) # changed relu to softmax
+        # self.relu = nn.ReLU()
     def forward(self, input_id, mask):
         _, pooled_output = self.bert(input_ids= input_id, attention_mask=mask,return_dict=False)
         pooled_output = self.dropout1(pooled_output)
         pooled_output = self.linear(pooled_output)
         # pooled_output = self.linear2(pooled_output)
         #pooled_output = self.dropout2(pooled_output) # added another dropout layer
-        # final_layer = self.softmax(pooled_output) # changed relu to softmax
-        final_layer = self.relu(pooled_output)
+        final_layer = self.softmax(pooled_output) # changed relu to softmax
+        # final_layer = self.relu(pooled_output)
         return final_layer
   
 #training the model
@@ -150,8 +149,8 @@ class BertClassifier(nn.Module):
 def train_modified(model, train_data, val_data, learning_rate, epochs):
     train_dataset, val_dataset = PRDataset(train_data), PRDataset(val_data)
 
-    train_dataloader = DataLoader(train_dataset, batch_size = 24, shuffle = True)
-    val_dataloader = DataLoader(val_dataset, batch_size=24)
+    train_dataloader = DataLoader(train_dataset, batch_size = 16, shuffle = True)
+    val_dataloader = DataLoader(val_dataset, batch_size=16)
 
     use_cuda = torch.cuda.is_available()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -298,7 +297,7 @@ def evaluate(model, test_data):
 
 
 model = BertClassifier()
-train_modified(model, df_train, df_val, 1e-6, 200)
+train_modified(model, df_train, df_val, 1e-5, 200)
 
 evaluate(model, df_test)
 

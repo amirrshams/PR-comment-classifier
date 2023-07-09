@@ -46,10 +46,10 @@ run = wandb.init(
     config={
         "learning_rate": 1e-6,
         "epochs": 200,
-        "batch size": 24,
+        "batch size": 20,
         "train size":0.8,
-        "Number of Layers":6,
-        "What else": "has relu and 6 other layers"}
+        "Number of Layers":8,
+        "What else": "has relu after each linear layer"}
     )
 
 
@@ -131,11 +131,13 @@ class BertClassifier(nn.Module):
         self.bert = BertModel.from_pretrained('bert-base-uncased')
         self.dropout1 = nn.Dropout(0.2)
         self.dropout2 = nn.Dropout(0.1) # added another dropout layer
-        self.linear1 = nn.Linear(768, 32)
-        self.linear2 = nn.Linear(32, 16)
-        self.linear3 = nn.Linear(16, 11)
+        self.linear1 = nn.Linear(768, 128)
+        self.linear2 = nn.Linear(128, 64)
+        self.linear3 = nn.Linear(64, 32)
+        self.linear4 = nn.Linear(32, 16)
+        self.linear5 = nn.Linear(16, 11)
         self.relu = nn.ReLU()
-        self.softmax = nn.Softmax(dim=1) # changed relu to softmax
+        self.softmax = nn.Softmax(dim=1) 
     def forward(self, input_id, mask):
         _, pooled_output = self.bert(input_ids= input_id, attention_mask=mask,return_dict=False)
         pooled_output = self.linear1(pooled_output)
@@ -143,9 +145,13 @@ class BertClassifier(nn.Module):
         pooled_output = self.dropout1(pooled_output)
         pooled_output = self.linear2(pooled_output)
         pooled_output = self.relu(pooled_output)
-        pooled_output = self.dropout2(pooled_output) # added another dropout layer
+        pooled_output = self.dropout2(pooled_output) 
         pooled_output = self.linear3(pooled_output)
-        final_layer = self.softmax(pooled_output) # changed relu to softmax
+        pooled_output = self.relu(pooled_output)
+        pooled_output = self.linear4(pooled_output)
+        pooled_output = self.relu(pooled_output)
+        pooled_output = self.linear5(pooled_output)
+        final_layer = self.softmax(pooled_output) 
         return final_layer
   
 #training the model
@@ -153,8 +159,8 @@ class BertClassifier(nn.Module):
 def train_modified(model, train_data, val_data, learning_rate, epochs):
     train_dataset, val_dataset = PRDataset(train_data), PRDataset(val_data)
 
-    train_dataloader = DataLoader(train_dataset, batch_size = 24, shuffle = True)
-    val_dataloader = DataLoader(val_dataset, batch_size=24)
+    train_dataloader = DataLoader(train_dataset, batch_size = 20, shuffle = True)
+    val_dataloader = DataLoader(val_dataset, batch_size=20)
 
     use_cuda = torch.cuda.is_available()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

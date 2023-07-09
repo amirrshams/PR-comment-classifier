@@ -48,7 +48,7 @@ run = wandb.init(
         "epochs": 200,
         "batch size": 16,
         "train size":0.8,
-        "Number of Layers":6,}
+        "Number of Layers":8,}
     )
 
 
@@ -128,11 +128,14 @@ class BertClassifier(nn.Module):
     def __init__(self):
         super(BertClassifier, self).__init__()
         self.bert = BertModel.from_pretrained('bert-base-uncased')
-        self.dropout1 = nn.Dropout(0.2)
-        self.dropout2 = nn.Dropout(0.1) # added another dropout layer
-        self.linear1 = nn.Linear(768, 32)
-        self.linear2 = nn.Linear(32, 16)
-        self.linear3 = nn.Linear(16, 11)
+        self.dropout1 = nn.Dropout(0.3)
+        self.dropout2 = nn.Dropout(0.2) # added another dropout layer
+        self.dropout3 = nn.Dropout(0.1)
+        self.linear1 = nn.Linear(768, 128)
+        self.linear2 = nn.Linear(128, 64)
+        self.linear3 = nn.Linear(64, 32)
+        self.linear4 = nn.Linear(32, 16)
+        self.linear5 = nn.Linear(16, 11)
         self.softmax = nn.Softmax(dim=1) # changed relu to softmax
     def forward(self, input_id, mask):
         _, pooled_output = self.bert(input_ids= input_id, attention_mask=mask,return_dict=False)
@@ -141,6 +144,9 @@ class BertClassifier(nn.Module):
         pooled_output = self.linear2(pooled_output)
         pooled_output = self.dropout2(pooled_output) # added another dropout layer
         pooled_output = self.linear3(pooled_output)
+        pooled_output = self.dropout3(pooled_output)
+        pooled_output = self.linear4(pooled_output)
+        pooled_output = self.linear5(pooled_output)
         final_layer = self.softmax(pooled_output) # changed relu to softmax
         return final_layer
   
