@@ -17,6 +17,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, multilabel_confusion_matrix
 from sklearn.preprocessing import LabelEncoder
 
+
 import re
 import string
 import ast
@@ -43,12 +44,12 @@ run = wandb.init(
     project="pr_classification",
     # Track hyperparameters and run metadata
     config={
-        "learning_rate": 1e-7,
+        "learning_rate": 1e-6,
         "epochs": 200,
         "batch size": 24,
-        "Dropout": 0.2,
-        "train size":0.75,
-        "Activation function": "Relu"}
+        "train size":0.8,
+        "Number of Layers":6,
+        "What else": "has relu and 6 other layers"}
     )
 
 
@@ -117,32 +118,34 @@ class PRDataset(torch.utils.data.Dataset):
 #splitting the data
 np.random.seed(112)
 
-df_train, df_remaining = train_test_split(df, test_size=0.25, random_state=42)
+df_train, df_remaining = train_test_split(df, test_size=0.2, random_state=42)
 df_val, df_test = train_test_split(df_remaining, test_size=0.5, random_state=42)
 
 print(len(df_train),len(df_val), len(df_test))
 
 #bert classifier class
 class BertClassifier(nn.Module):
-    
 
     def __init__(self):
         super(BertClassifier, self).__init__()
         self.bert = BertModel.from_pretrained('bert-base-uncased')
         self.dropout1 = nn.Dropout(0.2)
-        #self.dropout2 = nn.Dropout(0.1) # added another dropout layer
-        self.linear = nn.Linear(768, 11)
-        # self.linear2 = nn.Linear(11, 11)
-        # self.softmax = nn.Softmax(dim=1) # changed relu to softmax
+        self.dropout2 = nn.Dropout(0.1) # added another dropout layer
+        self.linear1 = nn.Linear(768, 32)
+        self.linear2 = nn.Linear(32, 16)
+        self.linear3 = nn.Linear(16, 11)
         self.relu = nn.ReLU()
+        self.softmax = nn.Softmax(dim=1) # changed relu to softmax
     def forward(self, input_id, mask):
         _, pooled_output = self.bert(input_ids= input_id, attention_mask=mask,return_dict=False)
+        pooled_output = self.linear1(pooled_output)
+        pooled_output = self.relu(pooled_output)
         pooled_output = self.dropout1(pooled_output)
-        pooled_output = self.linear(pooled_output)
-        # pooled_output = self.linear2(pooled_output)
-        #pooled_output = self.dropout2(pooled_output) # added another dropout layer
-        # final_layer = self.softmax(pooled_output) # changed relu to softmax
-        final_layer = self.relu(pooled_output)
+        pooled_output = self.linear2(pooled_output)
+        pooled_output = self.relu(pooled_output)
+        pooled_output = self.dropout2(pooled_output) # added another dropout layer
+        pooled_output = self.linear3(pooled_output)
+        final_layer = self.softmax(pooled_output) # changed relu to softmax
         return final_layer
   
 #training the model
@@ -172,7 +175,7 @@ def train_modified(model, train_data, val_data, learning_rate, epochs):
     train_accuracies = []
     val_accuracies = []
     for epoch_num in tqdm(range(epochs)):
-        
+
         total_acc_train = 0
         total_loss_train = 0
 
