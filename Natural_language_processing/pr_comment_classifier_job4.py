@@ -44,13 +44,12 @@ run = wandb.init(
     project="pr_classification",
     # Track hyperparameters and run metadata
     config={
+        "learning_rate": 1e-7,
         "model": "bert_large_uncased",
-        "learning_rate": 1e-6,
-        "dropout": 0.3,
         "epochs": 100,
-        "batch size": 16,
+        "batch size": 8,
         "train size":0.75,
-        "Number of Layers":3,}
+        "Number of Layers":4,}
     )
 
 
@@ -63,7 +62,7 @@ df = df.drop(['api_url','pullreq_id', ' url', 'pr_id', 'status', 'repo_id', 'Unn
 def text_preprocess(text):
     text = text.lower() # Convert to lowercase
     text = re.sub(r'@[A-Za-z0-9]+','',text) #remove @mentions
-    # text = re.sub(r'#','',text) #remove # symbol
+    text = re.sub(r'#','',text) #remove # symbol
     text = re.sub(r'https?:\/\/\S+','',text) #remove the hyper link
     text = re.sub(r'\n','',text) #remove \n
     text = re.sub(r'www\S+', '', text) #remove www
@@ -130,26 +129,29 @@ class BertClassifier(nn.Module):
     def __init__(self):
         super(BertClassifier, self).__init__()
         self.bert = BertModel.from_pretrained('bert-large-uncased')
-        self.dropout1 = nn.Dropout(0.3)
-        # self.dropout2 = nn.Dropout(0.2) # added another dropout layer
-        # self.dropout3 = nn.Dropout(0.1)
-        self.linear1 = nn.Linear(1024, 11)
-        # self.linear2 = nn.Linear(128, 64)
-        # self.linear3 = nn.Linear(64, 32)
+        self.dropout1 = nn.Dropout(0.4)
+        self.dropout2 = nn.Dropout(0.2) # added another dropout layer
+        self.linear1 = nn.Linear(1024, 512)
+        self.linear2 = nn.Linear(512, 11)
+        self.linear3 = nn.Linear(128, 32)
         # self.linear4 = nn.Linear(32, 16)
-        # self.linear5 = nn.Linear(16, 11)
-        self.softmax = nn.Softmax(dim=1) # changed relu to softmax
+        self.linear5 = nn.Linear(32, 11)
+        self.relu = nn.ReLU()
+        self.softmax = nn.Softmax(dim=1) 
     def forward(self, input_id, mask):
         _, pooled_output = self.bert(input_ids= input_id, attention_mask=mask,return_dict=False)
-        pooled_output = self.linear1(pooled_output)
         pooled_output = self.dropout1(pooled_output)
-        # pooled_output = self.linear2(pooled_output)
-        # pooled_output = self.dropout2(pooled_output) # added another dropout layer
+        pooled_output = self.linear1(pooled_output)
+        # pooled_output = self.relu(pooled_output)
+        pooled_output = self.dropout2(pooled_output) 
+        pooled_output = self.linear2(pooled_output)
+        # pooled_output = self.relu(pooled_output)
         # pooled_output = self.linear3(pooled_output)
-        # pooled_output = self.dropout3(pooled_output)
+        pooled_output = self.relu(pooled_output)
         # pooled_output = self.linear4(pooled_output)
+        # pooled_output = self.relu(pooled_output)
         # pooled_output = self.linear5(pooled_output)
-        final_layer = self.softmax(pooled_output) # changed relu to softmax
+        final_layer = self.softmax(pooled_output) 
         return final_layer
   
 #training the model
@@ -157,8 +159,8 @@ class BertClassifier(nn.Module):
 def train_modified(model, train_data, val_data, learning_rate, epochs):
     train_dataset, val_dataset = PRDataset(train_data), PRDataset(val_data)
 
-    train_dataloader = DataLoader(train_dataset, batch_size = 16, shuffle = True)
-    val_dataloader = DataLoader(val_dataset, batch_size=16)
+    train_dataloader = DataLoader(train_dataset, batch_size = 8, shuffle = True)
+    val_dataloader = DataLoader(val_dataset, batch_size=8)
 
     use_cuda = torch.cuda.is_available()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -257,7 +259,8 @@ def train_modified(model, train_data, val_data, learning_rate, epochs):
     # plt.ylabel('Loss')
     # plt.legend()
     # plt.show()
-                 
+              
+    
 def evaluate(model, test_data):
 
     test = PRDataset(test_data)
@@ -304,7 +307,7 @@ def evaluate(model, test_data):
 
 
 model = BertClassifier()
-train_modified(model, df_train, df_val, 1e-6, 200)
+train_modified(model, df_train, df_val, 1e-7, 200)
 
 evaluate(model, df_test)
 
