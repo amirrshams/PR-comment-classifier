@@ -297,7 +297,7 @@ def evaluate(model, test_data):
 
 
 model = BertClassifier()
-train_modified(model, df_train, df_val, 1e-5, 200)
+train_modified(model, df_train, df_val, 1e-5, 100)
 
 evaluate(model, df_test)
 
