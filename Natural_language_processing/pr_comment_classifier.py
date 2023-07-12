@@ -44,12 +44,13 @@ run = wandb.init(
     # Track hyperparameters and run metadata
     config={
         "model": "bert_large_uncased",
-        "learning_rate": 1e-5,
+        "learning_rate": 1e-6,
         "epochs": 100,
-        "batch size": 4,
+        "batch size": 8,
         "Dropout": 0.4,
         "train size":0.75,
-        "Activation function": "Softmax"}
+        "Activation function": "Softmax",
+        "Note": "the 3 categories with low number of samles are removed",}
     )
 
 
@@ -57,6 +58,11 @@ run = wandb.init(
 df = pd.read_csv('/home/a2shamso/projects/def-m2nagapp/a2shamso/pr_classification/dataset/Sample_5000_manual.csv')
 
 df = df.drop(['api_url','pullreq_id', ' url', 'pr_id', 'status', 'repo_id', 'Unnamed: 0', 'repo_id', 'comments_counts', 'pr_url', 'pr_api_url', 'author_id', 'author_desc_body', 'closer_id','commit_counts', 'code_changes_counts', 'created_at', 'closed_at', 'author_country', 'author_continent', 'same_country', 'author_eth', 'closer_eth','closer_country', 'same_eth', 'prs_white', 'prs_black', 'prs_api', 'prs_hispanic', 'pri_white', 'pri_black', 'pri_api', 'pri_hispanic', 'prs_eth_7', 'prs_eth_8', 'prs_eth_9', 'prs_eth_diff', 'prs_eth_diff_2'], axis=1)
+#drop the rows with these labels in manula_analysis: Chaotic, Not PR, Merge Conflict
+df = df[df.manual_analysis != 'Chaotic']
+df = df[df.manual_analysis != 'Not PR']
+df = df[df.manual_analysis != 'Merge Conflict']
+
 #text preprocessing
 def text_preprocess(text):
     text = text.lower() # Convert to lowercase
@@ -81,10 +87,13 @@ df['comments'] = df['comments'].apply(lambda x: x if len(x) > 0 else 'No comment
 tokenizer = BertTokenizer.from_pretrained('bert-large-uncased')
 # tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased-finetuned-sst-2-english")
 
-labels = {'No reason':0, 'Unnecessary':1, 'Replaced': 2, 'Merge Conflict':3,
-      'Successful':4, 'Stale':5, 'Resolved':6, 'Quality':7, 'Duplicate':8,
-      'Chaotic':9, 'Not PR':10}
+# labels = {'No reason':0, 'Unnecessary':1, 'Replaced': 2, 'Merge Conflict':3,
+#       'Successful':4, 'Stale':5, 'Resolved':6, 'Quality':7, 'Duplicate':8,
+#       'Chaotic':9, 'Not PR':10}
 
+
+labels = {'No reason':0, 'Unnecessary':1, 'Replaced': 2,
+      'Successful':3, 'Stale':4, 'Resolved':5, 'Quality':6, 'Duplicate':7}
 class PRDataset(torch.utils.data.Dataset):
     def __init__(self, df):
         self.labels = [labels[label] for label in df['manual_analysis']]
@@ -131,7 +140,7 @@ class BertClassifier(nn.Module):
         self.dropout1 = nn.Dropout(0.4)
         #self.dropout2 = nn.Dropout(0.1) # added another dropout layer
         self.linear = nn.Linear(1024, 11)
-        # self.linear2 = nn.Linear(11, 11)
+        # self.linear2 = nn.Linear(11, 11)  # added another linear layer    
         self.softmax = nn.Softmax(dim=1) # changed relu to softmax
         # self.relu = nn.ReLU()
     def forward(self, input_id, mask):
@@ -297,7 +306,7 @@ def evaluate(model, test_data):
 
 
 model = BertClassifier()
-train_modified(model, df_train, df_val, 1e-5, 100)
+train_modified(model, df_train, df_val, 1e-6, 100)
 
 evaluate(model, df_test)
 
