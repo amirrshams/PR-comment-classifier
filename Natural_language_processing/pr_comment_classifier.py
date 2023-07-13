@@ -125,7 +125,7 @@ class PRDataset(torch.utils.data.Dataset):
 #splitting the data
 # np.random.seed(112)
 
-df_train, df_remaining = train_test_split(df, test_size=0.25, random_state=1)
+df_train, df_remaining = train_test_split(df, test_size=0.20, random_state=1)
 df_val, df_test = train_test_split(df_remaining, test_size=0.5, random_state=1)
 
 print(len(df_train),len(df_val), len(df_test))
@@ -306,7 +306,7 @@ def evaluate(model, test_data):
 
 
 model = BertClassifier()
-train_modified(model, df_train, df_val, 1e-6, 100)
+train_modified(model, df_train, df_val, 1e-5, 100)
 
 evaluate(model, df_test)
 
