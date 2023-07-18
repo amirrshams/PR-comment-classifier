@@ -50,7 +50,7 @@ run = wandb.init(
         "Dropout": 0.5,
         "train size":0.75,
         "Activation function": "Relu",
-        "Note": "the 3 categories with low number of samles are removed",}
+        "Note": "the 3 categories with low number of samles are removed, Stratify on labels",}
     )
 
 
@@ -125,7 +125,7 @@ class PRDataset(torch.utils.data.Dataset):
 #splitting the data
 # np.random.seed(112)
 
-df_train, df_remaining = train_test_split(df, test_size=0.25, random_state=1)
+df_train, df_remaining = train_test_split(df, test_size=0.25, stratify= df['manual_analysis'], random_state=1)
 df_val, df_test = train_test_split(df_remaining, test_size=0.5, random_state=1)
 
 
