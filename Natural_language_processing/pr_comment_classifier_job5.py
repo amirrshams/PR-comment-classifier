@@ -141,7 +141,7 @@ class BertClassifier(nn.Module):
         self.bert = BertModel.from_pretrained('bert-large-uncased')
         self.dropout1 = nn.Dropout(0.4)
         #self.dropout2 = nn.Dropout(0.1) # added another dropout layer
-        self.linear = nn.Linear(768, 11)
+        self.linear = nn.Linear(1024, 11)
         # self.linear2 = nn.Linear(11, 11)  # added another linear layer    
         self.softmax = nn.Softmax(dim=1) # changed relu to softmax
         self.relu = nn.ReLU()
