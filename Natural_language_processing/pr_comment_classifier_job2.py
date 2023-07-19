@@ -11,7 +11,6 @@ from torch.utils.data import Dataset, DataLoader, random_split
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 import numpy as np
 from torch.optim import Adam
-os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, multilabel_confusion_matrix
@@ -45,14 +44,13 @@ run = wandb.init(
     # Track hyperparameters and run metadata
     config={
         "model": "bert_large_uncased",
-        "learning_rate": 1e-6,
-        "dropout": 0.3,
+        "learning_rate": 1e-4,
         "epochs": 100,
-        "batch size": 16,
-        "train size":0.75,
-        "Number of Layers":3,}
+        "batch size": 2,
+        "Dropout": 0.4,
+        "train size":0.8,
+        "Activation function": "Softmax",}
     )
-
 
 #reading the data
 df = pd.read_csv('/home/a2shamso/projects/def-m2nagapp/a2shamso/pr_classification/dataset/Sample_5000_manual.csv')
@@ -69,7 +67,7 @@ def text_preprocess(text):
     text = re.sub(r'www\S+', '', text) #remove www
     text = re.sub(r'[^A-Za-z0-9 ]+', '', text)     # Handle special characters and symbols
     text = re.sub(r'\b([a-f0-9]{40})\b', 'Commit ID', text)
-    # text = text.translate(str.maketrans('', '', string.punctuation))     # Remove punctuation
+    text = text.translate(str.maketrans('', '', string.punctuation))     # Remove punctuation
 
     return text
 df['comments'] = df['comments'].apply(lambda x: ast.literal_eval(x))
@@ -119,7 +117,7 @@ class PRDataset(torch.utils.data.Dataset):
 #splitting the data
 np.random.seed(112)
 
-df_train, df_remaining = train_test_split(df, test_size=0.25, random_state=42)
+df_train, df_remaining = train_test_split(df, test_size=0.2, random_state=42)
 df_val, df_test = train_test_split(df_remaining, test_size=0.5, random_state=42)
 
 print(len(df_train),len(df_val), len(df_test))
@@ -130,7 +128,7 @@ class BertClassifier(nn.Module):
     def __init__(self):
         super(BertClassifier, self).__init__()
         self.bert = BertModel.from_pretrained('bert-large-uncased')
-        self.dropout1 = nn.Dropout(0.3)
+        self.dropout1 = nn.Dropout(0.4)
         # self.dropout2 = nn.Dropout(0.2) # added another dropout layer
         # self.dropout3 = nn.Dropout(0.1)
         self.linear1 = nn.Linear(1024, 11)
@@ -157,8 +155,8 @@ class BertClassifier(nn.Module):
 def train_modified(model, train_data, val_data, learning_rate, epochs):
     train_dataset, val_dataset = PRDataset(train_data), PRDataset(val_data)
 
-    train_dataloader = DataLoader(train_dataset, batch_size = 16, shuffle = True)
-    val_dataloader = DataLoader(val_dataset, batch_size=16)
+    train_dataloader = DataLoader(train_dataset, batch_size = 2, shuffle = True)
+    val_dataloader = DataLoader(val_dataset, batch_size=2)
 
     use_cuda = torch.cuda.is_available()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -304,7 +302,7 @@ def evaluate(model, test_data):
 
 
 model = BertClassifier()
-train_modified(model, df_train, df_val, 1e-6, 200)
+train_modified(model, df_train, df_val, 1e-4, 100)
 
 evaluate(model, df_test)
 

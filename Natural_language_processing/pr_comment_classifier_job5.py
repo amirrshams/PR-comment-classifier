@@ -44,13 +44,13 @@ run = wandb.init(
     # Track hyperparameters and run metadata
     config={
         "model": "bert_large_uncased",
-        "learning_rate": 1e-6,
-        "epochs": 200,
-        "batch size": 16,
+        "learning_rate": 1e-5,
+        "epochs": 100,
+        "batch size": 12,
         "Dropout": 0.4,
-        "train size":0.75,
+        "train size":0.8,
         "Activation function": "Relu",
-        "Note": "the 3 categories with low number of samles are removed, Stratify on labels",}
+        "Note": "the 3 categories with low number of samles are removed",}
     )
 
 
@@ -125,7 +125,7 @@ class PRDataset(torch.utils.data.Dataset):
 #splitting the data
 np.random.seed(112)
 
-df_train, df_remaining = train_test_split(df, test_size=0.25, random_state=42)
+df_train, df_remaining = train_test_split(df, test_size=0.2, random_state=42)
 df_val, df_test = train_test_split(df_remaining, test_size=0.5, random_state=42)
 
 
@@ -141,7 +141,7 @@ class BertClassifier(nn.Module):
         self.bert = BertModel.from_pretrained('bert-large-uncased')
         self.dropout1 = nn.Dropout(0.4)
         #self.dropout2 = nn.Dropout(0.1) # added another dropout layer
-        self.linear = nn.Linear(1024, 11)
+        self.linear = nn.Linear(768, 11)
         # self.linear2 = nn.Linear(11, 11)  # added another linear layer    
         self.softmax = nn.Softmax(dim=1) # changed relu to softmax
         self.relu = nn.ReLU()
@@ -160,8 +160,8 @@ class BertClassifier(nn.Module):
 def train_modified(model, train_data, val_data, learning_rate, epochs):
     train_dataset, val_dataset = PRDataset(train_data), PRDataset(val_data)
 
-    train_dataloader = DataLoader(train_dataset, batch_size = 16, shuffle = True)
-    val_dataloader = DataLoader(val_dataset, batch_size=16)
+    train_dataloader = DataLoader(train_dataset, batch_size = 12, shuffle = True)
+    val_dataloader = DataLoader(val_dataset, batch_size=12)
 
     use_cuda = torch.cuda.is_available()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -308,7 +308,7 @@ def evaluate(model, test_data):
 
 
 model = BertClassifier()
-train_modified(model, df_train, df_val, 1e-6, 200)
+train_modified(model, df_train, df_val, 1e-5, 100)
 
 evaluate(model, df_test)
 
