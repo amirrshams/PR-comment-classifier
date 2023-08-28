@@ -50,7 +50,7 @@ run = wandb.init(
         "Dropout": 0.4,
         "train size":0.8,
         "Activation function": "Relu",
-        "Note": "the 3 categories with low number of samles are removed",}
+        "Note": "the 3 categories with low number of samples are removed",}
     )
 
 
@@ -67,7 +67,7 @@ df = df[df.manual_analysis != 'Merge Conflict']
 def text_preprocess(text):
     text = text.lower() # Convert to lowercase
     text = re.sub(r'@[A-Za-z0-9]+','',text) #remove @mentions
-    text = re.sub(r'#','',text) #remove # symbol
+    # text = re.sub(r'#','',text) #remove # symbol
     text = re.sub(r'https?:\/\/\S+','',text) #remove the hyper link
     text = re.sub(r'\n','',text) #remove \n
     text = re.sub(r'www\S+', '', text) #remove www
@@ -87,13 +87,13 @@ df['comments'] = df['comments'].apply(lambda x: x if len(x) > 0 else 'No comment
 tokenizer = BertTokenizer.from_pretrained('bert-large-uncased')
 # tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased-finetuned-sst-2-english")
 
-# labels = {'No reason':0, 'Unnecessary':1, 'Replaced': 2, 'Merge Conflict':3,
-#       'Successful':4, 'Stale':5, 'Resolved':6, 'Quality':7, 'Duplicate':8,
-#       'Chaotic':9, 'Not PR':10}
+labels = {'No reason':0, 'Unnecessary':1, 'Replaced': 2, 'Merge Conflict':3,
+      'Successful':4, 'Stale':5, 'Resolved':6, 'Quality':7, 'Duplicate':8,
+      'Chaotic':9, 'Not PR':10}
 
 
-labels = {'No reason':0, 'Unnecessary':1, 'Replaced': 2,
-      'Successful':3, 'Stale':4, 'Resolved':5, 'Quality':6, 'Duplicate':7}
+# labels = {'No reason':0, 'Unnecessary':1, 'Replaced': 2,
+#       'Successful':3, 'Stale':4, 'Resolved':5, 'Quality':6, 'Duplicate':7}
 class PRDataset(torch.utils.data.Dataset):
     def __init__(self, df):
         self.labels = [labels[label] for label in df['manual_analysis']]
@@ -161,7 +161,7 @@ def train_modified(model, train_data, val_data, learning_rate, epochs):
     train_dataset, val_dataset = PRDataset(train_data), PRDataset(val_data)
 
     train_dataloader = DataLoader(train_dataset, batch_size = 12, shuffle = True)
-    val_dataloader = DataLoader(val_dataset, batch_size=12)
+    val_dataloader = DataLoader(val_dataset, batch_size= 12)
 
     use_cuda = torch.cuda.is_available()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

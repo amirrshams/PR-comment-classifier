@@ -24,6 +24,10 @@ pd.set_option('display.max_columns', None)
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
+import nltk
+nltk.download('punkt') 
+
 # import pytorch_lightning as pl
 # from torchmetrics.functional import accuracy, f1_score, auroc
 # from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
@@ -44,13 +48,13 @@ run = wandb.init(
     # Track hyperparameters and run metadata
     config={
         "model": "bert_large_uncased",
-        "learning_rate": 1e-6,
-        "epochs": 200,
-        "batch size": 16,
+        "learning_rate": 1e-7,
+        "epochs": 50,
+        "batch size": 12,
         "Dropout": 0.4,
-        "train size":0.75,
-        "Activation function": "Relu",
-        "Note": "the 3 categories with low number of samles are removed, Stratify on labels",}
+        "train size":0.8,
+        "Activation function": "Softmax"
+        }
     )
 
 
@@ -65,21 +69,29 @@ df = df[df.manual_analysis != 'Merge Conflict']
 
 #text preprocessing
 def text_preprocess(text):
-    text = text.lower() # Convert to lowercase
     text = re.sub(r'@[A-Za-z0-9]+','',text) #remove @mentions
-    text = re.sub(r'#','',text) #remove # symbol
-    text = re.sub(r'https?:\/\/\S+','',text) #remove the hyper link
+    # text = re.sub(r'#','',text) #remove # symbol
+    #text = re.sub(r'https?:\/\/\S+','',text) #remove the hyper link
     text = re.sub(r'\n','',text) #remove \n
     text = re.sub(r'www\S+', '', text) #remove www
-    text = re.sub(r'[^A-Za-z0-9 ]+', '', text)     # Handle special characters and symbols
     text = re.sub(r'\b([a-f0-9]{40})\b', 'Commit ID', text)
-    text = text.translate(str.maketrans('', '', string.punctuation))     # Remove punctuation
+    text = re.sub(r'#(\d+)', 'pull request number' , text)
+    text = re.sub(r'https://github\.com/[^/]+/[^/]+/pull/\d+', 'another pull request', text)
 
     return text
+
+def sentence_segmentation(text):
+    sentences = nltk.sent_tokenize(text)
+    return sentences
+    
 df['comments'] = df['comments'].apply(lambda x: ast.literal_eval(x))
 df['comments'] = df['comments'].apply(lambda x: [text_preprocess(t) for t in x])
 df['comments'] = df['comments'].apply(lambda x: ' '.join(x))
-df['comments'] = df['comments'].apply(lambda x: x if len(x) > 0 else 'No comments')
+df['comments'] = df['comments'].apply(lambda x: x if len(x) > 0 else '[No comments]')
+df['comments'] = df['comments'].apply(lambda x: sentence_segmentation(x))
+df['comments'] = df['comments'].apply(lambda x: ' '.join(x).strip())
+# df['comments'] = df['comments'].apply(lambda x: re.sub(r'\[|\]', '', x))
+df['comments'] = df['comments'].apply(lambda x: x.replace("\'", "'"))
 
 #model
 
@@ -87,13 +99,13 @@ df['comments'] = df['comments'].apply(lambda x: x if len(x) > 0 else 'No comment
 tokenizer = BertTokenizer.from_pretrained('bert-large-uncased')
 # tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased-finetuned-sst-2-english")
 
-# labels = {'No reason':0, 'Unnecessary':1, 'Replaced': 2, 'Merge Conflict':3,
-#       'Successful':4, 'Stale':5, 'Resolved':6, 'Quality':7, 'Duplicate':8,
-#       'Chaotic':9, 'Not PR':10}
+labels = {'No reason':0, 'Unnecessary':1, 'Replaced': 2, 'Merge Conflict':3,
+      'Successful':4, 'Stale':5, 'Resolved':6, 'Quality':7, 'Duplicate':8,
+      'Chaotic':9, 'Not PR':10}
 
 
-labels = {'No reason':0, 'Unnecessary':1, 'Replaced': 2,
-      'Successful':3, 'Stale':4, 'Resolved':5, 'Quality':6, 'Duplicate':7}
+# labels = {'No reason':0, 'Unnecessary':1, 'Replaced': 2,
+#       'Successful':3, 'Stale':4, 'Resolved':5, 'Quality':6, 'Duplicate':7}
 class PRDataset(torch.utils.data.Dataset):
     def __init__(self, df):
         self.labels = [labels[label] for label in df['manual_analysis']]
@@ -125,7 +137,7 @@ class PRDataset(torch.utils.data.Dataset):
 #splitting the data
 np.random.seed(112)
 
-df_train, df_remaining = train_test_split(df, test_size=0.25, random_state=42)
+df_train, df_remaining = train_test_split(df, test_size=0.2, random_state=42)
 df_val, df_test = train_test_split(df_remaining, test_size=0.5, random_state=42)
 
 
@@ -139,7 +151,7 @@ class BertClassifier(nn.Module):
     def __init__(self):
         super(BertClassifier, self).__init__()
         self.bert = BertModel.from_pretrained('bert-large-uncased')
-        self.dropout1 = nn.Dropout(0.4)
+        self.dropout1 = nn.Dropout(0.2)
         #self.dropout2 = nn.Dropout(0.1) # added another dropout layer
         self.linear = nn.Linear(1024, 11)
         # self.linear2 = nn.Linear(11, 11)  # added another linear layer    
@@ -151,8 +163,8 @@ class BertClassifier(nn.Module):
         pooled_output = self.linear(pooled_output)
         # pooled_output = self.linear2(pooled_output)
         #pooled_output = self.dropout2(pooled_output) # added another dropout layer
-        final_layer = self.relu(pooled_output)
-        # final_layer = self.softmax(pooled_output)
+        # final_layer = self.relu(pooled_output)
+        final_layer = self.softmax(pooled_output)
         return final_layer
   
 #training the model
@@ -160,8 +172,8 @@ class BertClassifier(nn.Module):
 def train_modified(model, train_data, val_data, learning_rate, epochs):
     train_dataset, val_dataset = PRDataset(train_data), PRDataset(val_data)
 
-    train_dataloader = DataLoader(train_dataset, batch_size = 16, shuffle = True)
-    val_dataloader = DataLoader(val_dataset, batch_size=16)
+    train_dataloader = DataLoader(train_dataset, batch_size = 12, shuffle = True)
+    val_dataloader = DataLoader(val_dataset, batch_size=12)
 
     use_cuda = torch.cuda.is_available()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -308,7 +320,7 @@ def evaluate(model, test_data):
 
 
 model = BertClassifier()
-train_modified(model, df_train, df_val, 1e-6, 200)
+train_modified(model, df_train, df_val, 1e-7, 50)
 
 evaluate(model, df_test)
 
