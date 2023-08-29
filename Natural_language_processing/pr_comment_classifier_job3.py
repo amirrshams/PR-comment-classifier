@@ -45,9 +45,9 @@ run = wandb.init(
     # Track hyperparameters and run metadata
     config={
         "learning_rate": 1e-6,
-        "model": "bert_large_uncased",
-        "epochs": 100,
-        "batch size": 20,
+        "model": "bert_base_uncased",
+        "epochs": 50,
+        "batch size": 24,
         "train size":0.8,
         "Number of Layers":3,}
     )
@@ -62,8 +62,8 @@ df = df.drop(['api_url','pullreq_id', ' url', 'pr_id', 'status', 'repo_id', 'Unn
 def text_preprocess(text):
     text = text.lower() # Convert to lowercase
     text = re.sub(r'@[A-Za-z0-9]+','',text) #remove @mentions
-    text = re.sub(r'#','',text) #remove # symbol
-    text = re.sub(r'https?:\/\/\S+','',text) #remove the hyper link
+    # text = re.sub(r'#','',text) #remove # symbol
+    # text = re.sub(r'https?:\/\/\S+','',text) #remove the hyper link
     text = re.sub(r'\n','',text) #remove \n
     text = re.sub(r'www\S+', '', text) #remove www
     text = re.sub(r'[^A-Za-z0-9 ]+', '', text)     # Handle special characters and symbols
@@ -79,7 +79,7 @@ df['comments'] = df['comments'].apply(lambda x: x if len(x) > 0 else 'No comment
 #model
 
 # creating the pytorch dataset
-tokenizer = BertTokenizer.from_pretrained('bert-large-uncased')
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 # tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased-finetuned-sst-2-english")
 
 labels = {'No reason':0, 'Unnecessary':1, 'Replaced': 2, 'Merge Conflict':3,
@@ -128,10 +128,10 @@ class BertClassifier(nn.Module):
 
     def __init__(self):
         super(BertClassifier, self).__init__()
-        self.bert = BertModel.from_pretrained('bert-large-uncased')
+        self.bert = BertModel.from_pretrained('bert-base-uncased')
         self.dropout1 = nn.Dropout(0.2)
         # self.dropout2 = nn.Dropout(0.1) # added another dropout layer
-        self.linear1 = nn.Linear(1024, 11)
+        self.linear1 = nn.Linear(768, 11)
         # self.linear2 = nn.Linear(128, 64)
         # self.linear3 = nn.Linear(64, 32)
         # self.linear4 = nn.Linear(32, 16)
@@ -159,8 +159,8 @@ class BertClassifier(nn.Module):
 def train_modified(model, train_data, val_data, learning_rate, epochs):
     train_dataset, val_dataset = PRDataset(train_data), PRDataset(val_data)
 
-    train_dataloader = DataLoader(train_dataset, batch_size = 16, shuffle = True)
-    val_dataloader = DataLoader(val_dataset, batch_size=16)
+    train_dataloader = DataLoader(train_dataset, batch_size = 24, shuffle = True)
+    val_dataloader = DataLoader(val_dataset, batch_size=24)
 
     use_cuda = torch.cuda.is_available()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -307,7 +307,7 @@ def evaluate(model, test_data):
 
 
 model = BertClassifier()
-train_modified(model, df_train, df_val, 1e-5, 200)
+train_modified(model, df_train, df_val, 1e-5, 50)
 
 evaluate(model, df_test)
 

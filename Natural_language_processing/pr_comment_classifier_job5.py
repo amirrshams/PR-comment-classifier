@@ -44,13 +44,13 @@ run = wandb.init(
     # Track hyperparameters and run metadata
     config={
         "model": "bert_large_uncased",
-        "learning_rate": 1e-5,
-        "epochs": 100,
-        "batch size": 12,
+        "learning_rate": 1e-6,
+        "epochs": 50,
+        "batch size": 16,
         "Dropout": 0.4,
         "train size":0.8,
         "Activation function": "Relu",
-        "Note": "the 3 categories with low number of samples are removed",}
+        }
     )
 
 
@@ -59,9 +59,9 @@ df = pd.read_csv('/home/a2shamso/projects/def-m2nagapp/a2shamso/pr_classificatio
 
 df = df.drop(['api_url','pullreq_id', ' url', 'pr_id', 'status', 'repo_id', 'Unnamed: 0', 'repo_id', 'comments_counts', 'pr_url', 'pr_api_url', 'author_id', 'author_desc_body', 'closer_id','commit_counts', 'code_changes_counts', 'created_at', 'closed_at', 'author_country', 'author_continent', 'same_country', 'author_eth', 'closer_eth','closer_country', 'same_eth', 'prs_white', 'prs_black', 'prs_api', 'prs_hispanic', 'pri_white', 'pri_black', 'pri_api', 'pri_hispanic', 'prs_eth_7', 'prs_eth_8', 'prs_eth_9', 'prs_eth_diff', 'prs_eth_diff_2'], axis=1)
 #drop the rows with these labels in manula_analysis: Chaotic, Not PR, Merge Conflict
-df = df[df.manual_analysis != 'Chaotic']
-df = df[df.manual_analysis != 'Not PR']
-df = df[df.manual_analysis != 'Merge Conflict']
+# df = df[df.manual_analysis != 'Chaotic']
+# df = df[df.manual_analysis != 'Not PR']
+# df = df[df.manual_analysis != 'Merge Conflict']
 
 #text preprocessing
 def text_preprocess(text):
@@ -160,8 +160,8 @@ class BertClassifier(nn.Module):
 def train_modified(model, train_data, val_data, learning_rate, epochs):
     train_dataset, val_dataset = PRDataset(train_data), PRDataset(val_data)
 
-    train_dataloader = DataLoader(train_dataset, batch_size = 12, shuffle = True)
-    val_dataloader = DataLoader(val_dataset, batch_size= 12)
+    train_dataloader = DataLoader(train_dataset, batch_size = 16, shuffle = True)
+    val_dataloader = DataLoader(val_dataset, batch_size= 16)
 
     use_cuda = torch.cuda.is_available()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -308,7 +308,7 @@ def evaluate(model, test_data):
 
 
 model = BertClassifier()
-train_modified(model, df_train, df_val, 1e-5, 100)
+train_modified(model, df_train, df_val, 1e-6, 50)
 
 evaluate(model, df_test)
 

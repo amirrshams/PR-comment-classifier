@@ -44,8 +44,8 @@ run = wandb.init(
     # Track hyperparameters and run metadata
     config={
         "model": "bert_large_uncased",
-        "learning_rate": 1e-4,
-        "epochs": 100,
+        "learning_rate": 1e-5,
+        "epochs": 50,
         "batch size": 2,
         "Dropout": 0.4,
         "train size":0.8,
@@ -302,7 +302,7 @@ def evaluate(model, test_data):
 
 
 model = BertClassifier()
-train_modified(model, df_train, df_val, 1e-4, 100)
+train_modified(model, df_train, df_val, 1e-5, 50)
 
 evaluate(model, df_test)
 
