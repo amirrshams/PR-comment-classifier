@@ -44,18 +44,18 @@ run = wandb.init(
     # Track hyperparameters and run metadata
     config={
         "model": "bert_large_uncased",
-        "learning_rate": 1e-6,
-        "epochs": 50,
+        "learning_rate": 1e-8,
+        "epochs": 200,
         "batch size": 16,
         "Dropout": 0.4,
         "train size":0.8,
-        "Activation function": "Relu",
+        "Activation function": "Relu and softmax",
         }
     )
 
 
 #reading the data
-df = pd.read_csv('/home/a2shamso/projects/def-m2nagapp/a2shamso/pr_classification/dataset/Sample_6000_manual.csv')
+df = pd.read_csv('/home/a2shamso/projects/def-m2nagapp/a2shamso/pr_classification/dataset/Sample_7000_manual.csv')
 
 df = df.drop(['api_url','pullreq_id', ' url', 'pr_id', 'status', 'repo_id', 'Unnamed: 0', 'repo_id', 'comments_counts', 'pr_url', 'pr_api_url', 'author_id', 'author_desc_body', 'closer_id','commit_counts', 'code_changes_counts', 'created_at', 'closed_at', 'author_country', 'author_continent', 'same_country', 'author_eth', 'closer_eth','closer_country', 'same_eth', 'prs_white', 'prs_black', 'prs_api', 'prs_hispanic', 'pri_white', 'pri_black', 'pri_api', 'pri_hispanic', 'prs_eth_7', 'prs_eth_8', 'prs_eth_9', 'prs_eth_diff', 'prs_eth_diff_2'], axis=1)
 #drop the rows with these labels in manula_analysis: Chaotic, Not PR, Merge Conflict
@@ -70,7 +70,7 @@ def text_preprocess(text):
     # text = re.sub(r'#','',text) #remove # symbol
     text = re.sub(r'https?:\/\/\S+','',text) #remove the hyper link
     text = re.sub(r'\n','',text) #remove \n
-    text = re.sub(r'www\S+', '', text) #remove www
+    # text = re.sub(r'www\S+', '', text) #remove www
     text = re.sub(r'[^A-Za-z0-9 ]+', '', text)     # Handle special characters and symbols
     text = re.sub(r'\b([a-f0-9]{40})\b', 'Commit ID', text)
     text = text.translate(str.maketrans('', '', string.punctuation))     # Remove punctuation
@@ -148,11 +148,11 @@ class BertClassifier(nn.Module):
     def forward(self, input_id, mask):
         _, pooled_output = self.bert(input_ids= input_id, attention_mask=mask,return_dict=False)
         pooled_output = self.dropout1(pooled_output)
+        pooled_output = self.relu(pooled_output)
         pooled_output = self.linear(pooled_output)
         # pooled_output = self.linear2(pooled_output)
         #pooled_output = self.dropout2(pooled_output) # added another dropout layer
-        final_layer = self.relu(pooled_output)
-        # final_layer = self.softmax(pooled_output)
+        final_layer = self.softmax(pooled_output)
         return final_layer
   
 #training the model
@@ -308,7 +308,7 @@ def evaluate(model, test_data):
 
 
 model = BertClassifier()
-train_modified(model, df_train, df_val, 1e-6, 50)
+train_modified(model, df_train, df_val, 1e-8, 200)
 
 evaluate(model, df_test)
 
