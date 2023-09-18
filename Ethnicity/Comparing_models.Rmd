@@ -1,0 +1,54 @@
+---
+title: "Comparing_models"
+output: html_document
+date: "2023-09-18"
+---
+
+```{r}
+library(readr)
+library(dplyr)
+
+```
+
+```{r}
+df_nonmerged <- read_csv("/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Dataset/Dataset/Non_Merged/Sample/temp/Sample_10000_manual.csv")
+df_merged <- read_csv("/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Dataset/Dataset/Merged/pr_merged_final_April_2023.csv")
+df_comp <- read_csv("/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Dataset/Dataset/pr_final_April_2023.csv")
+df_TSE <- read_csv("/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Dataset/Reza's Dataset/TSE paper/2020-TSE-Developers-Perceptible-Ethnicity-and-PR-evaluation-main/Dataset/pull_requests.csv")
+```
+
+```{r}
+df_TSE <- df_TSE %>%
+  distinct(pr_id, .keep_all = TRUE)
+
+df_nonmerged <- df_nonmerged %>%
+  distinct(pr_id, .keep_all = TRUE)
+```
+
+```{r}
+df_nonmerged <- left_join(df_nonmerged, select(df_TSE, pr_id, prs_pri_same_nationality, prs_experience, prs_succ_rate, prs_popularity, prs_watched_repo, prs_followed_pri, prs_tenure_mnth, prs_main_team_member)
+, by= "pr_id", all.y = TRUE)
+```
+
+```{r}
+df_merged <- left_join(df_merged, select(df_TSE, pr_id, prs_pri_same_nationality, prs_experience, prs_succ_rate, prs_popularity, prs_watched_repo, prs_followed_pri, prs_tenure_mnth, prs_main_team_member)
+, by= "pr_id", all.y = TRUE)
+
+df_comp <- left_join(df_comp, select(df_TSE, pr_id, prs_pri_same_nationality, prs_experience, prs_succ_rate, prs_popularity, prs_watched_repo, prs_followed_pri, prs_tenure_mnth, prs_main_team_member)
+, by= "pr_id", all.y = TRUE)
+```
+
+```{r}
+df_nonmerged <- df_nonmerged %>%
+  select(-c(`Unnamed: 0`, pr_id, pullreq_id, api_url, url, pr_url, pr_api_url, author_id, author_desc_body, closer_id, comments, created_at, closed_at))
+
+
+df_merged <- df_merged %>%
+  select(-c(`Unnamed: 0`, pr_id, pullreq_id, api_url, url, pr_url, pr_api_url, author_id, author_desc_body, closer_id, comments, created_at, closed_at))
+
+
+df_comp <- df_comp %>%
+  select(-c(`Unnamed: 0`, pr_id, pullreq_id, api_url, url, pr_url, pr_api_url, author_id, author_desc_body, closer_id, comments, created_at, closed_at))
+
+```
+
