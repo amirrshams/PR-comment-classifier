@@ -7,6 +7,8 @@ date: "2023-09-18"
 ```{r}
 library(readr)
 library(dplyr)
+library(forcats)
+library(lme4)
 
 ```
 
@@ -40,15 +42,84 @@ df_comp <- left_join(df_comp, select(df_TSE, pr_id, prs_pri_same_nationality, pr
 
 ```{r}
 df_nonmerged <- df_nonmerged %>%
-  select(-c(`Unnamed: 0`, pr_id, pullreq_id, api_url, url, pr_url, pr_api_url, author_id, author_desc_body, closer_id, comments, created_at, closed_at))
+  select(-c(`Unnamed: 0`, pr_id, pullreq_id, api_url, url, pr_url, pr_api_url, author_desc_body, closer_id, comments, created_at, closed_at))
 
 
 df_merged <- df_merged %>%
-  select(-c(`Unnamed: 0`, pr_id, pullreq_id, api_url, url, pr_url, pr_api_url, author_id, author_desc_body, closer_id, comments, created_at, closed_at))
+  select(-c(`Unnamed: 0`, pr_id, pullreq_id, api_url, url, pr_url, pr_api_url, author_desc_body, closer_id, comments, created_at, closed_at))
 
 
 df_comp <- df_comp %>%
-  select(-c(`Unnamed: 0`, pr_id, pullreq_id, api_url, url, pr_url, pr_api_url, author_id, author_desc_body, closer_id, comments, created_at, closed_at))
+  select(-c(`Unnamed: 0`, pr_id, pullreq_id, api_url, url, pr_url, pr_api_url, author_desc_body, closer_id, comments, created_at, closed_at))
 
+```
+
+
+```{r}
+# Create a copy of df_nonmerged
+df_nonmerged_encoded <- df_nonmerged
+
+# Define encoding for 'manual_analysis' column
+encoding <- c(
+  'Quality' = 0, 'Successful' = 0, 'Unnecessary' = 1, 'No reason' = 0,
+  'Resolved' = 0, 'Replaced' = 0, 'Duplicate' = 0, 'Stale' = 0,
+  'Merge Conflict' = 0, 'Chaotic' = 0, 'Not PR' = 0
+)
+
+# Map the encoding to 'manual_analysis' and convert to integer
+df_nonmerged_encoded$manual_analysis <- as.integer(factor(df_nonmerged_encoded$manual_analysis, levels = names(encoding)))
+df_nonmerged_encoded$manual_analysis <- encoding[df_nonmerged_encoded$manual_analysis]
+
+# Replace missing values with 0 in selected columns
+df_nonmerged_encoded[is.na(df_nonmerged_encoded)] <- 0
+
+# Encode categorical columns using forcats
+categorical_cols <- c(
+  'author_eth', 'author_country', 'author_continent',
+  'closer_eth', 'prs_eth_8', 'prs_eth_7', 'prs_eth_9',
+  'prs_eth_diff', 'prs_eth_diff_2', 'closer_country', 'status'
+)
+
+for (col in categorical_cols) {
+  df_nonmerged_encoded[[col]] <- as.integer(factor(df_nonmerged_encoded[[col]]))
+}
+
+```
+
+```{r}
+table(df_nonmerged_encoded$manual_analysis)
+```
+```{r}
+# Define the columns with '\\N' values
+columns_with_n_values <- c('same_country', 'prs_pri_same_nationality')
+
+# Create a logical mask to identify rows with '\\N' in any of the specified columns
+mask <- apply(df_nonmerged_encoded[columns_with_n_values], 1, function(row) any(grepl('\\N', row)))
+
+# Use the mask to filter and display the rows where '\\N' occurs
+rows_with_n_values <- df_nonmerged_encoded[mask, ]
+
+# Replace '\\N' values with 0 in the selected columns
+for (column in columns_with_n_values) {
+  df_nonmerged_encoded[[column]][df_nonmerged_encoded[[column]] == '\\N'] <- 0
+}
+
+
+```
+
+formula <- manual_analysis ~ status + comments_counts (1) + commit_counts(0) + code_changes_counts(0) + author_country(0) + closer_country(0) + author_continent(1) + same_country(1) + author_eth(1) + closer_eth() + same_eth(۱) + prs_white() + prs_api() + prs_black() + prs_hispanic() + pri_white() + pri_black() + pri_api() + pri_hispanic() + prs_eth_8() + prs_eth_7() + prs_eth_9() + prs_eth_diff() + prs_eth_diff_2() + manual_analysis() + prs_experience(0) + prs_succ_rate(0) + prs_popularity(0) + prs_watched_repo(0) + prs_followed_pri(0) + prs_tenure_mnth(0) + prs_main_team_member() + (1 | author_id)
+
+```{r}
+formula <- manual_analysis ~ comments_counts  + author_continent + same_country + author_eth + closer_eth + same_eth + (1 | author_id)
+model <- glmer(formula, data = df_nonmerged_encoded, family = binomial)
+
+```
+
+```{r}
+summary(model)
+```
+
+```{r}
+colSums(is.na(df_nonmerged_encoded))
 ```
 
