@@ -9,6 +9,8 @@ library(readr)
 library(dplyr)
 library(forcats)
 library(lme4)
+library(glmnet)
+library(optimx)
 
 ```
 
@@ -42,18 +44,25 @@ df_comp <- left_join(df_comp, select(df_TSE, pr_id, prs_pri_same_nationality, pr
 
 ```{r}
 df_nonmerged <- df_nonmerged %>%
-  select(-c(`Unnamed: 0`, pr_id, pullreq_id, api_url, url, pr_url, pr_api_url, author_desc_body, closer_id, comments, created_at, closed_at))
+  select(-c(`Unnamed: 0`, pr_id, api_url, url, pr_url, prs_white, prs_api, prs_black, prs_hispanic, pri_white, pri_black, pri_api, pri_hispanic , pr_api_url, author_desc_body, closer_id, comments, created_at, closed_at))
 
 
 df_merged <- df_merged %>%
-  select(-c(`Unnamed: 0`, pr_id, pullreq_id, api_url, url, pr_url, pr_api_url, author_desc_body, closer_id, comments, created_at, closed_at))
+  select(-c(`Unnamed: 0`, pr_id, api_url, url, pr_url, prs_white, prs_api, prs_black, prs_hispanic, pri_white, pri_black, pri_api, pri_hispanic , pr_api_url, author_desc_body, comments, created_at, closed_at))
 
 
 df_comp <- df_comp %>%
-  select(-c(`Unnamed: 0`, pr_id, pullreq_id, api_url, url, pr_url, pr_api_url, author_desc_body, closer_id, comments, created_at, closed_at))
+  select(-c(`Unnamed: 0`, pr_id, api_url, url, pr_url, prs_white, prs_api, prs_black, prs_hispanic, pri_white, pri_black, pri_api, pri_hispanic , pr_api_url, author_desc_body, comments, created_at, closed_at))
 
 ```
 
+```{r}
+df_comp <- df_comp %>%
+  select(-c(closer_id))
+```
+
+# Building the model in rejected categories
+for one rejected category against all the other categories. here for testing we are going to use 
 
 ```{r}
 # Create a copy of df_nonmerged
@@ -64,6 +73,7 @@ encoding <- c(
   'Quality' = 0, 'Successful' = 0, 'Unnecessary' = 1, 'No reason' = 0,
   'Resolved' = 0, 'Replaced' = 0, 'Duplicate' = 0, 'Stale' = 0,
   'Merge Conflict' = 0, 'Chaotic' = 0, 'Not PR' = 0
+  
 )
 
 # Map the encoding to 'manual_analysis' and convert to integer
@@ -75,7 +85,7 @@ df_nonmerged_encoded[is.na(df_nonmerged_encoded)] <- 0
 
 # Encode categorical columns using forcats
 categorical_cols <- c(
-  'author_eth', 'author_country', 'author_continent',
+  'author_id', 'author_eth', 'author_country', 'author_continent',
   'closer_eth', 'prs_eth_8', 'prs_eth_7', 'prs_eth_9',
   'prs_eth_diff', 'prs_eth_diff_2', 'closer_country', 'status'
 )
@@ -110,8 +120,8 @@ for (column in columns_with_n_values) {
 formula <- manual_analysis ~ status + comments_counts (1) + commit_counts(0) + code_changes_counts(0) + author_country(0) + closer_country(0) + author_continent(1) + same_country(1) + author_eth(1) + closer_eth() + same_eth(۱) + prs_white() + prs_api() + prs_black() + prs_hispanic() + pri_white() + pri_black() + pri_api() + pri_hispanic() + prs_eth_8() + prs_eth_7() + prs_eth_9() + prs_eth_diff() + prs_eth_diff_2() + manual_analysis() + prs_experience(0) + prs_succ_rate(0) + prs_popularity(0) + prs_watched_repo(0) + prs_followed_pri(0) + prs_tenure_mnth(0) + prs_main_team_member() + (1 | author_id)
 
 ```{r}
-formula <- manual_analysis ~ comments_counts  + author_continent + same_country + author_eth + closer_eth + same_eth + (1 | author_id)
-model <- glmer(formula, data = df_nonmerged_encoded, family = binomial)
+formula <- manual_analysis ~ comments_counts + comments_counts + commit_counts + code_changes_counts + author_country + closer_country + author_continent + same_country + author_eth + closer_eth + same_eth  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_followed_pri + prs_tenure_mnth + prs_main_team_member+  (1 | repo_id) + (1 | author_id)
+model <- glmer(formula, data = df_nonmerged_encoded, family = binomial, glmerControl(optCtrl=list(maxfun=2e8)))
 
 ```
 
@@ -121,5 +131,179 @@ summary(model)
 
 ```{r}
 colSums(is.na(df_nonmerged_encoded))
+```
+
+
+# Building the model for all merged and nonmerged pull reqests
+this would be based on status of the pull request
+
+## Encoding the model
+
+```{r}
+# Create a copy of df_nonmerged
+df_comp_encoded <- df_comp
+
+# Define encoding for 'manual_analysis' column
+encoding <- c(
+  'Quality' = 0, 'Successful' = 0, 'Unnecessary' = 1, 'No reason' = 0,
+  'Resolved' = 0, 'Replaced' = 0, 'Duplicate' = 0, 'Stale' = 0,
+  'Merge Conflict' = 0, 'Chaotic' = 0, 'Not PR' = 0
+  
+)
+
+# Map the encoding to 'manual_analysis' and convert to integer
+#df_nonmerged_encoded$manual_analysis <- as.integer(factor(df_nonmerged_encoded$manual_analysis, levels = names(encoding)))
+#df_nonmerged_encoded$manual_analysis <- encoding[df_nonmerged_encoded$manual_analysis]
+
+# Replace missing values with 0 in selected columns
+df_comp_encoded[is.na(df_comp_encoded)] <- 0
+
+# Encode categorical columns using forcats
+categorical_cols <- c(
+  'author_id', 'author_eth', 'author_country', 'author_continent',
+  'closer_eth', 'prs_eth_8', 'prs_eth_7', 'prs_eth_9',
+  'prs_eth_diff', 'prs_eth_diff_2', 'closer_country'
+)
+
+for (col in categorical_cols) {
+  df_comp_encoded[[col]] <- as.integer(factor(df_comp_encoded[[col]]))
+}
+# encoding status as zero for merged and 1 for not-merged
+df_comp_encoded$status <- ifelse(df_comp_encoded$status == "merged", 0, 1)
+
+
+```
+## remove the \\N values and change them with 0
+```{r}
+# Define the columns with '\\N' values
+columns_with_n_values <- c('same_country', 'prs_pri_same_nationality')
+
+# Create a logical mask to identify rows with '\\N' in any of the specified columns
+mask <- apply(df_comp_encoded[columns_with_n_values], 1, function(row) any(grepl('\\N', row)))
+
+# Use the mask to filter and display the rows where '\\N' occurs
+rows_with_n_values <- df_comp_encoded[mask, ]
+
+# Replace '\\N' values with 0 in the selected columns
+for (column in columns_with_n_values) {
+  df_comp_encoded[[column]][df_comp_encoded[[column]] == '\\N'] <- 0
+}
+
+
+```
+
+sampling the data to time the model and see if this works
+```{r}
+df_comp_encoded_sample <- df_comp_encoded %>% sample_n(1000) 
+```
+also normalizing to see what is the problem
+```{r}
+df_comp_encoded_sample <- df_comp_encoded_sample %>% mutate_at(vars(code_changes_counts, author_country, closer_country, prs_experience, prs_succ_rate, prs_popularity, prs_watched_repo, prs_tenure_mnth ), scale)
+
+```
+
+formula <- status ~ comments_counts + commit_counts + code_changes_counts + author_country + closer_country + author_continent + same_country<> + author_eth + closer_eth + same_eth<>  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_followed_pri <> + prs_tenure_mnth + prs_main_team_member <>+  (1 | repo_id) + (1 | author_id)
+
+```{r}
+#formula <- status ~ comments_counts + commit_counts + author_continent  + author_eth + closer_eth  +  (1 | repo_id) 
+formula <- status ~ comments_counts + commit_counts + code_changes_counts + author_country + closer_country + author_continent  + author_eth + closer_eth  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth +  (1 | repo_id) + (1 | author_id)
+model <- glmer(formula, data = df_comp_encoded_sample, family = binomial, glmerControl( optCtrl = list(maxfun=1e8)))
+
+```
+
+```{r}
+summary(model)
+```
+
+
+
+
+
+# Building the model in rejected categories with samples of nonmerged
+## Sampling the Data from merged prs based on nonmerged prs rejection reasons
+
+```{r}
+category <- 'Unnecessary'
+
+# Calculate the desired number of samples for the specified category
+number_of_samples <- sum(df_nonmerged$manual_analysis == category)
+
+# Filter repo_id values associated with the specified category in df_nonmerged
+repo_ids_for_category <- unique(df_nonmerged[df_nonmerged$manual_analysis == category, ]$repo_id)
+
+# Filter 'df_merged' to keep only rows with 'repo_id' values in repo_ids_for_category
+filtered_df_merged <- df_merged[df_merged$repo_id %in% repo_ids_for_category, ]
+
+# Create an empty data frame to store the sampled data
+sampled_data <- data.frame()
+
+# Iterate through the repositories with rejected PRs in the specified category
+for (repo_id in repo_ids_for_category) {
+  # Filter rows from filtered_df_merged for the current repo_id
+  repo_samples <- filtered_df_merged[filtered_df_merged$repo_id == repo_id, ]
+  
+  # If there are multiple samples for the current repo, select one randomly
+  if (nrow(repo_samples) > 1) {
+    set.seed(42)  # Set seed for reproducibility
+    repo_samples <- repo_samples[sample(nrow(repo_samples), size = 1), ]
+  }
+  
+  # Append the selected sample to the sampled_data data frame
+  sampled_data <- rbind(sampled_data, repo_samples)
+}
+
+# Randomly select additional samples to reach the desired number
+remaining_samples <- number_of_samples - nrow(sampled_data)
+set.seed(42)  # Set seed for reproducibility
+additional_samples <- filtered_df_merged[sample(nrow(filtered_df_merged), size = remaining_samples), ]
+
+# Append the additional samples to the sampled_data data frame
+sampled_data <- rbind(sampled_data, additional_samples)
+```
+checking to see if the repos are the same
+```{r}
+# Get the unique 'repo_id' values from the sampled_data data frame
+sampled_repo_ids <- unique(sampled_data$repo_id)
+
+# Check if all sampled 'repo_id' values are in 'repo_ids_for_category'
+if(all(sampled_repo_ids %in% repo_ids_for_category)) {
+  cat("All samples are from repositories with the specified rejected reason.\n")
+} else {
+  cat("Some samples are not from repositories with the specified rejected reason.\n")
+}
+```
+
+```{r}
+# there is a closer_id feature in sample_reason that is not in nonmerged, let's drop that first
+sampled_data <- sampled_data[, !(names(sampled_data) %in% "closer_id")]
+sampled_data <- sampled_data[, !(names(sampled_data) %in%  "checked")]
+
+```
+
+
+
+```{r}
+
+common_columns <- intersect(names(df_nonmerged), names(sampled_data))
+sampled_data <- sampled_data %>% rename(!!!setNames(common_columns, common_columns))
+df_nonmerged_category <- df_nonmerged[df_nonmerged$manual_analysis == category, ]
+df_nonmerged_category <- df_nonmerged_category[, !(names(df_nonmerged_category) %in% "manual_analysis")]
+
+
+# Concatenate data frames df_nonmerged and sampled_data by rows
+df_sample_reason <- rbind(df_nonmerged_category, sampled_data) 
+
+
+# Sort the resulting data frame by 'repo_id'
+df_sample_reason <- df_sample_reason[order(df_sample_reason$repo_id), ]
+
+# Drop the 'checked' and 'manual_analysis' columns
+df_sample_reason <- df_sample_reason[, !(names(df_sample_reason) %in% c('checked', 'manual_analysis'))]
+
+```
+
+```{r}
+table(df_sample_reason$status)
+
 ```
 
