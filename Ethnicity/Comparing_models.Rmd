@@ -194,7 +194,7 @@ for (column in columns_with_n_values) {
 
 sampling the data to time the model and see if this works
 ```{r}
-df_comp_encoded_sample <- df_comp_encoded %>% sample_n(1000) 
+df_comp_encoded_sample <- df_comp_encoded %>% sample_n(100000) 
 ```
 also normalizing to see what is the problem
 ```{r}
@@ -207,7 +207,7 @@ formula <- status ~ comments_counts + commit_counts + code_changes_counts + auth
 ```{r}
 #formula <- status ~ comments_counts + commit_counts + author_continent  + author_eth + closer_eth  +  (1 | repo_id) 
 formula <- status ~ comments_counts + commit_counts + code_changes_counts + author_country + closer_country + author_continent  + author_eth + closer_eth  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth +  (1 | repo_id) + (1 | author_id)
-model <- glmer(formula, data = df_comp_encoded_sample, family = binomial, glmerControl( optCtrl = list(maxfun=1e8)))
+model <- glmer(formula, data = df_comp_encoded_sample, family = binomial, glmerControl( optCtrl = list(maxfun=1e5)))
 
 ```
 
@@ -305,5 +305,41 @@ df_sample_reason <- df_sample_reason[, !(names(df_sample_reason) %in% c('checked
 ```{r}
 table(df_sample_reason$status)
 
+```
+
+## Encoding the model
+
+```{r}
+# Create a copy of df_nonmerged
+df_sample_reason_encoded <- df_sample_reason
+
+# Define encoding for 'manual_analysis' column
+
+# Map the encoding to 'manual_analysis' and convert to integer
+
+
+# Replace missing values with 0 in selected columns
+df_sample_reason_encoded[is.na(df_sample_reason_encoded)] <- 0
+
+# Encode categorical columns using forcats
+categorical_cols <- c(
+  'author_id', 'author_eth', 'author_country', 'author_continent',
+  'closer_eth', 'prs_eth_8', 'prs_eth_7', 'prs_eth_9',
+  'prs_eth_diff', 'prs_eth_diff_2', 'closer_country'
+)
+
+for (col in categorical_cols) {
+  df_sample_reason_encoded[[col]] <- as.integer(factor(df_sample_reason_encoded[[col]]))
+}
+# encoding status as zero for merged and 1 for not-merged
+df_sample_reason_encoded$status <- ifelse(df_sample_reason_encoded$status == "merged", 0, 1)
+```
+
+```{r}
+formula <- status ~ comments_counts + commit_counts + code_changes_counts + author_country + closer_country + author_continent  + author_eth + closer_eth  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth +  (1 | repo_id) + (1 | author_id)
+model_2 <- glmer(formula, data = df_sample_reason_encoded, family = binomial, glmerControl( optCtrl = list(maxfun=1e5)))
+```
+```{r}
+summary(model_2)
 ```
 
