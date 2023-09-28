@@ -3,27 +3,102 @@ title: "Replicating_Reza"
 output: html_document
 date: "2023-09-22"
 ---
+```{r}
+library(car)
+library(stargazer)
+library(texreg)
+library(plyr)
+library(xtable)
+library(splitstackshape)
+library(dplyr)
+library(lme4)
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+library(Hmisc)
+library(lmerTest)
+library(e1071)
+library(ggplot2)
 ```
 
-## R Markdown
+```{r}
+set.seed(17) # so can reproduce the results
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+#PATH TO DATA WIT SIMULATED VARIABLE
+prep_combined <- read.csv("/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Dataset/Reza's Dataset/TSE paper/2020-TSE-Developers-Perceptible-Ethnicity-and-PR-evaluation-main/Dataset/pull_requests.csv")
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+print("Convert all variables to appropriate data types")
+prep_combined$pr_status<-factor(prep_combined$pr_status,levels=c("not-merged","merged"))
+prep_combined$prs_eth <- factor(prep_combined$prs_eth,levels=c("White","Black","Hispanic","API", "Unknown","AIAN"))
+prep_combined$prm_eth <- factor(prep_combined$prm_eth,levels=c("White","Black","Hispanic","API", "Unknown"))
+prep_combined$prc_eth <- factor(prep_combined$prc_eth,levels=c("White","Black","Hispanic","API", "Unknown"))
+
+prep_combined$repo_pr_tenure_mnth<-as.integer(prep_combined$repo_pr_tenure_mnth)
+prep_combined$repo_pr_tenure_mnth<-scale(log(prep_combined$repo_pr_tenure_mnth +1))
+prep_combined$repo_pr_popularity<-as.integer(prep_combined$repo_pr_popularity)
+prep_combined$repo_pr_popularity<-scale(log(prep_combined$repo_pr_popularity +1))
+prep_combined$repo_pr_team_size<-as.integer(prep_combined$repo_pr_team_size)
+prep_combined$repo_pr_team_size<-scale(log(prep_combined$repo_pr_team_size +1))
+prep_combined$perc_external_contribs<-as.integer(prep_combined$perc_external_contribs)
+prep_combined$perc_external_contribs<-scale(log(prep_combined$perc_external_contribs +1))
+
+prep_combined$prs_experience<-as.integer(prep_combined$prs_experience)
+prep_combined$prs_experience<-scale(log(prep_combined$prs_experience +1))
+prep_combined$prs_succ_rate<-as.integer(prep_combined$prs_succ_rate)
+prep_combined$prs_succ_rate<-scale(log(prep_combined$prs_succ_rate +1))
+prep_combined$prs_main_team_member<-factor(prep_combined$prs_main_team_member,levels=c(0,1))
+prep_combined$prs_popularity<-as.integer(prep_combined$prs_popularity)
+prep_combined$prs_popularity<-scale(log(prep_combined$prs_popularity +1))
+prep_combined$prs_tenure_mnth<-as.integer(prep_combined$prs_tenure_mnth)
+prep_combined$prs_tenure_mnth<-scale(log(prep_combined$prs_tenure_mnth +1))
+prep_combined$pr_comments_counts<-as.integer(prep_combined$pr_comments_counts)
+prep_combined$pr_comments_counts<-scale(log(prep_combined$pr_comments_counts +1))
+prep_combined$pr_num_commits<-as.integer(prep_combined$pr_num_commits)
+prep_combined$pr_num_commits<-scale(log(prep_combined$pr_num_commits +1))
+prep_combined$pr_nth<-as.integer(prep_combined$pr_nth)
+prep_combined$pr_nth<-scale(log(prep_combined$pr_nth +1))
+prep_combined$prs_watched_repo<-factor(prep_combined$prs_watched_repo,levels=c(0,1))
+prep_combined$prs_watched_repo<-factor(prep_combined$prs_watched_repo,levels=c(0,1))
+prep_combined$prs_followed_pri<-factor(prep_combined$prs_followed_pri,levels=c(0,1))
+prep_combined$intra_branch<-factor(prep_combined$intra_branch,levels=c(0,1))
+```
+
+```{r}
+prep_combined_sample <- prep_combined %>% sample_n(10000) 
+
+```
+
+
+```{r}
+
+model<-pr_status~repo_pr_tenure_mnth+
+  repo_pr_popularity+
+  repo_pr_team_size+
+  perc_external_contribs+
+  prs_succ_rate+
+  pr_files_changed +
+  prs_main_team_member+
+  prs_popularity+
+  prs_watched_repo+
+  prs_followed_pri+
+  prs_tenure_mnth+
+  pr_comments_counts+
+  pr_num_commits+
+  prs_experience+
+  pr_nth+
+  prs_continent+
+  prs_pri_same_nationality+
+  intra_branch+
+  (1|prs_id) + (1|repo_id)
+
+glmer_model_ethnicities<-glmer(model,data=prep_combined_sample, family=binomial,control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
+print(summary(glmer_model_ethnicities), correlation=FALSE)
+car::vif(glmer_model_ethnicities)
+
+effect_size_glmer_model_ethnicities = anova(glmer_model_ethnicities,test='Chisq')
+print(effect_size_glmer_model_ethnicities)
+```
+
