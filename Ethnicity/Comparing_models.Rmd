@@ -52,6 +52,7 @@ df_comp <- left_join(df_comp, select(df_TSE, pr_id, prs_pri_same_nationality, pr
 ```
 
 ### Dropping the columns (depricated)
+
 ```{r}
 df_nonmerged <- df_nonmerged %>%
   select(-c(`Unnamed: 0`, pr_id, api_url, url, pr_url, prs_white, prs_api, prs_black, prs_hispanic, pri_white, pri_black, pri_api, pri_hispanic , pr_api_url, author_desc_body, closer_id, comments, created_at, closed_at))
@@ -72,8 +73,9 @@ df_comp <- df_comp %>%
 ```
 
 # Building the model in rejected categories
-for one rejected category against all the other categories. here for testing we are going to use 
-## Encoding the manual analysis label and factoring the rest
+
+for one rejected category against all the other categories. here for testing we are going to use \## Encoding the manual analysis label and factoring the rest
+
 ```{r}
 # Create a copy of df_nonmerged
 df_nonmerged_factor <- df_nonmerged
@@ -130,6 +132,7 @@ df_nonmerged_factor$intra_branch<-factor(df_nonmerged_factor$intra_branch,levels
 ```{r}
 table(df_nonmerged_factor$manual_analysis)
 ```
+
 ```{r}
 # Define the columns with '\\N' values
 columns_with_n_values <- c('same_country', 'prs_pri_same_nationality')
@@ -148,11 +151,9 @@ for (column in columns_with_n_values) {
 
 ```
 
-formula <- manual_analysis ~ status + comments_counts (1) + commit_counts(0) + code_changes_counts(0) + author_country(0) + closer_country(0) + author_continent(1) + same_country(1) + author_eth(1) + closer_eth() + same_eth(۱) + prs_white() + prs_api() + prs_black() + prs_hispanic() + pri_white() + pri_black() + pri_api() + pri_hispanic() + prs_eth_8() + prs_eth_7() + prs_eth_9() + prs_eth_diff() + prs_eth_diff_2() + manual_analysis() + prs_experience(0) + prs_succ_rate(0) + prs_popularity(0) + prs_watched_repo(0) + prs_followed_pri(0) + prs_tenure_mnth(0) + prs_main_team_member() + (1 | author_id)
+formula \<- manual_analysis \~ status + comments_counts (1) + commit_counts(0) + code_changes_counts(0) + author_country(0) + closer_country(0) + author_continent(1) + same_country(1) + author_eth(1) + closer_eth() + same_eth(۱) + prs_white() + prs_api() + prs_black() + prs_hispanic() + pri_white() + pri_black() + pri_api() + pri_hispanic() + prs_eth_8() + prs_eth_7() + prs_eth_9() + prs_eth_diff() + prs_eth_diff_2() + manual_analysis() + prs_experience(0) + prs_succ_rate(0) + prs_popularity(0) + prs_watched_repo(0) + prs_followed_pri(0) + prs_tenure_mnth(0) + prs_main_team_member() + (1 \| author_id)
 
-formula <- manual_analysis ~  comments_counts + commit_counts + code_changes_counts + author_continent  + author_eth + closer_eth  + prs_pri_same_nationality + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member +
-repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + pr_opened_at + pr_files_changed + pr_lines_changed + intra_branch + (1 | repo_id) + (1 | author_id)
-
+formula \<- manual_analysis \~ comments_counts + commit_counts + code_changes_counts + author_continent + author_eth + closer_eth + prs_pri_same_nationality + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + pr_opened_at + pr_files_changed + pr_lines_changed + intra_branch + (1 \| repo_id) + (1 \| author_id)
 
 ```{r}
 formula <- manual_analysis ~  comments_counts + commit_counts + code_changes_counts + author_continent  + author_eth + closer_eth  + prs_pri_same_nationality + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member +
@@ -165,6 +166,7 @@ car::vif(glmer_model_unnecessary)
 effect_size_glmer_model = anova(glmer_model_unnecessary,test='Chisq')
 print(effect_size_glmer_model)
 ```
+
 Now we try the model without the ethnicity
 
 ```{r}
@@ -178,9 +180,8 @@ effect_size_glmer_model = anova(glmer_model_unnecessary_we,test='Chisq')
 print(effect_size_glmer_model)
 ```
 
-
-
 # Building the model for all merged and nonmerged pull reqests
+
 this would be based on status of the pull request
 
 ## Encoding the model
@@ -219,8 +220,11 @@ df_comp_encoded$status <- ifelse(df_comp_encoded$status == "merged", 0, 1)
 
 
 ```
+
 ## factoring the values
+
 instead of encoding, i'm gonna use factoring
+
 ```{r}
 df_comp_factor <- df_comp
 
@@ -266,6 +270,7 @@ df_nonmerged_factor_unn$intra_branch<-factor(df_nonmerged_factor_unn$intra_branc
 ```
 
 ## remove the \\N values and change them with 0
+
 ```{r}
 # Define the columns with '\\N' values
 columns_with_n_values <- c('same_country', 'prs_pri_same_nationality')
@@ -283,18 +288,23 @@ for (column in columns_with_n_values) {
 
 
 ```
+
 ## Building the model
+
 sampling the data to time the model and see if this works
+
 ```{r}
 df_comp_factor_sample <- df_comp_factor %>% sample_n(10000) 
 ```
+
 also normalizing to see what is the problem
+
 ```{r}
 #df_comp_factor_sample <- df_comp_factor_sample %>% mutate_at(vars(code_changes_counts, author_country, closer_country, prs_experience, #prs_succ_rate, prs_popularity, prs_watched_repo, prs_tenure_mnth ), scale)
 
 ```
 
-formula <- status ~ comments_counts + commit_counts + code_changes_counts + author_country + closer_country + author_continent + same_country<> + author_eth + closer_eth + same_eth<>  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_followed_pri <> + prs_tenure_mnth + prs_main_team_member <>+  (1 | repo_id) + (1 | author_id)
+formula \<- status \~ comments_counts + commit_counts + code_changes_counts + author_country + closer_country + author_continent + same_country\<\> + author_eth + closer_eth + same_eth\<\> + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_followed_pri \<\> + prs_tenure_mnth + prs_main_team_member \<\>+ (1 \| repo_id) + (1 \| author_id)
 
 ```{r}
 #formula <- status ~ comments_counts + commit_counts + author_continent  + author_eth + closer_eth  +  (1 | repo_id) 
@@ -314,16 +324,12 @@ effect_size_glmer_model = anova(glmer_model,test='Chisq')
 print(effect_size_glmer_model)
 ```
 
-
-
 ```{r}
 summary(model)
 ```
 
-
-
-
 # Building the model in rejected categories with samples of merged
+
 ## Sampling the Data from merged prs based on nonmerged prs rejection reasons (Depricated as no bootstrapping)
 
 ```{r}
@@ -364,7 +370,9 @@ additional_samples <- filtered_df_merged[sample(nrow(filtered_df_merged), size =
  # Append the additional samples to the sampled_data data frame
 sampled_data <- rbind(sampled_data, additional_samples)
 ```
+
 checking to see if the repos are the same
+
 ```{r}
  # Get the unique 'repo_id' values from the sampled_data data frame
 sampled_repo_ids <- unique(sampled_data$repo_id)
@@ -383,8 +391,6 @@ sampled_data <- sampled_data[, !(names(sampled_data) %in% "closer_id")]
 sampled_data <- sampled_data[, !(names(sampled_data) %in%  "checked")]
 
 ```
-
-
 
 ```{r}
 
@@ -439,23 +445,28 @@ for (col in categorical_cols) {
  # encoding status as zero for merged and 1 for not-merged
 df_sample_reason_encoded$status <- ifelse(df_sample_reason_encoded$status == "merged", 0, 1)
 ```
+
 ```{r}
 formula <- status ~ comments_counts + commit_counts + code_changes_counts + author_country + closer_country + author_continent  + author_eth + closer_eth  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth +  (1 | repo_id) + (1 | author_id)
 model_2 <- glmer(formula, data = df_sample_reason_encoded, family = binomial, glmerControl( optCtrl = list(maxfun=1e5)))
 ```
+
 ```{r}
 summary(model_2)
 ```
 
-
-
-
 ## selecting the category, getting the data for that category and Factoring the data
+
 ```{r}
-df_nonmerged_factor_unn <- df_comp
+category <- 'Unnecessary'
+
+# Factoring for both merged and nonmerged
+df_nonmerged_factor_unn <- df_nonmerged[df_nonmerged$manual_analysis == category, ]
+df_merged_factored <- df_merged
 
 
 df_nonmerged_factor_unn$status<-factor(df_nonmerged_factor_unn$status,levels=c("not-merged","merged"))
+df_merged_factored$status<-factor(df_merged_factored$status,levels=c("not-merged","merged"))
 
 df_nonmerged_factor_unn$repo_pr_tenure_mnth<-as.integer(df_nonmerged_factor_unn$repo_pr_tenure_mnth)
 df_nonmerged_factor_unn$repo_pr_tenure_mnth<-scale(log(df_nonmerged_factor_unn$repo_pr_tenure_mnth +1))
@@ -466,9 +477,22 @@ df_nonmerged_factor_unn$repo_pr_team_size<-scale(log(df_nonmerged_factor_unn$rep
 df_nonmerged_factor_unn$perc_external_contribs<-as.integer(df_nonmerged_factor_unn$perc_external_contribs)
 df_nonmerged_factor_unn$perc_external_contribs<-scale(log(df_nonmerged_factor_unn$perc_external_contribs +1))
 
+df_merged_factored$repo_pr_tenure_mnth<-as.integer(df_merged_factored$repo_pr_tenure_mnth)
+df_merged_factored$repo_pr_tenure_mnth<-scale(log(df_merged_factored$repo_pr_tenure_mnth +1))
+df_merged_factored$repo_pr_popularity<-as.integer(df_merged_factored$repo_pr_popularity)
+df_merged_factored$repo_pr_popularity<-scale(log(df_merged_factored$repo_pr_popularity +1))
+df_merged_factored$repo_pr_team_size<-as.integer(df_merged_factored$repo_pr_team_size)
+df_merged_factored$repo_pr_team_size<-scale(log(df_merged_factored$repo_pr_team_size +1))
+df_merged_factored$perc_external_contribs<-as.integer(df_merged_factored$perc_external_contribs)
+df_merged_factored$perc_external_contribs<-scale(log(df_merged_factored$perc_external_contribs +1))
+
 df_nonmerged_factor_unn$closer_country <- factor(df_nonmerged_factor_unn$closer_country)                                    
 df_nonmerged_factor_unn$author_country <- factor(df_nonmerged_factor_unn$author_country)                                    
 df_nonmerged_factor_unn$author_continent <- factor(df_nonmerged_factor_unn$author_continent,levels=c("Asia","Africa","South America","Antarctica", "Unknown", "North America", "Europe", "Oceania"))
+
+df_merged_factored$closer_country <- factor(df_merged_factored$closer_country)                                    
+df_merged_factored$author_country <- factor(df_merged_factored$author_country)                                    
+df_merged_factored$author_continent <- factor(df_merged_factored$author_continent,levels=c("Asia","Africa","South America","Antarctica", "Unknown", "North America", "Europe", "Oceania"))
                                     
                                     
                                     
@@ -490,5 +514,76 @@ df_nonmerged_factor_unn$prs_followed_pri<-factor(df_nonmerged_factor_unn$prs_fol
 df_nonmerged_factor_unn$same_eth<-factor(df_nonmerged_factor_unn$same_eth,levels=c(0,1))
 df_nonmerged_factor_unn$same_country<-factor(df_nonmerged_factor_unn$same_country,levels=c(0,1))
 df_nonmerged_factor_unn$intra_branch<-factor(df_nonmerged_factor_unn$intra_branch,levels=c(0,1))
+
+                                    
+df_merged_factored$prs_experience<-as.integer(df_merged_factored$prs_experience)
+df_merged_factored$prs_experience<-scale(log(df_merged_factored$prs_experience +1))
+df_merged_factored$prs_succ_rate<-as.integer(df_merged_factored$prs_succ_rate)
+df_merged_factored$prs_succ_rate<-scale(log(df_merged_factored$prs_succ_rate +1))
+df_merged_factored$prs_main_team_member<-factor(df_merged_factored$prs_main_team_member,levels=c(0,1))
+df_merged_factored$prs_popularity<-as.integer(df_merged_factored$prs_popularity)
+df_merged_factored$prs_popularity<-scale(log(df_merged_factored$prs_popularity +1))
+df_merged_factored$prs_tenure_mnth<-as.integer(df_merged_factored$prs_tenure_mnth)
+df_merged_factored$prs_tenure_mnth<-scale(log(df_merged_factored$prs_tenure_mnth +1))
+df_merged_factored$comments_counts<-as.integer(df_merged_factored$comments_counts)
+df_merged_factored$comments_counts<-scale(log(df_merged_factored$comments_counts +1))
+df_merged_factored$commit_counts<-as.integer(df_merged_factored$commit_counts)
+df_merged_factored$commit_counts<-scale(log(df_merged_factored$commit_counts +1))
+df_merged_factored$prs_watched_repo<-factor(df_merged_factored$prs_watched_repo,levels=c(0,1))
+df_merged_factored$prs_followed_pri<-factor(df_merged_factored$prs_followed_pri,levels=c(0,1))
+df_merged_factored$same_eth<-factor(df_merged_factored$same_eth,levels=c(0,1))
+df_merged_factored$same_country<-factor(df_merged_factored$same_country,levels=c(0,1))
+df_merged_factored$intra_branch<-factor(df_merged_factored$intra_branch,levels=c(0,1))
 ```
 
+## making the samples from merged pull requests from the same repositories of the rejected reason
+
+also bootstrapping and making the model
+
+```{r}
+unique_repo_ids <- unique(df_nonmerged_factor_unn$repo_id)
+
+formula <- status ~  comments_counts + commit_counts + code_changes_counts + author_continent  + author_eth + closer_eth  + prs_pri_same_nationality + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member +
+repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + (1 | repo_id) + (1 | author_id)
+
+# Define a function to fit the glmer model
+fit_glmer_model <- function(data) {
+  # Combine the "Unnecessary" pull requests with the merged pull requests
+  combined_data <- rbind(df_nonmerged_factor_unn, data)
+  
+  # Fit your glmer model on the combined data
+  model <- glmer(formula, data = combined_data, family = binomial,
+                 control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
+  
+  return(model)
+}
+
+# Set the number of bootstrap iterations
+num_bootstraps <- 1000  # You can adjust this number as needed
+
+# Create a vector to store bootstrapped model results
+boot_models <- vector("list", length = num_bootstraps)
+
+# Perform bootstrapping
+for (i in 1:num_bootstraps) {
+  # Generate bootstrap indices by sampling with replacement from merged pull requests
+  boot_indices <- sample(1:nrow(df_merged_factored), replace = TRUE)
+  
+  # Extract the bootstrapped sample of merged pull requests
+  bootstrap_sample <- df_merged_factored[boot_indices, ]
+  
+  # Check if the repo_id of each sample is in the unique_repo_ids from "Unnecessary" pull requests
+  # If not, resample until a matching repo_id is found
+  #while (!(bootstrap_sample$repo_id %in% unique_repo_ids)) {
+   # boot_indices <- sample(1:nrow(df_merged_factored), replace = TRUE)
+    #bootstrap_sample <- df_merged_factored[boot_indices, ]
+  
+  
+  # Fit the glmer model on the bootstrapped merged data
+  boot_models[[i]] <- fit_glmer_model(bootstrap_sample)
+}
+
+# Display the bootstrapped models
+print(boot_models)
+
+```
