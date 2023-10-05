@@ -184,7 +184,7 @@ print(effect_size_glmer_model)
 
 this would be based on status of the pull request
 
-## Encoding the model
+## Encoding the model(depricated)
 
 ```{r}
 # Create a copy of df_nonmerged
@@ -229,41 +229,41 @@ instead of encoding, i'm gonna use factoring
 df_comp_factor <- df_comp
 
 
-df_nonmerged_factor_unn$status<-factor(df_nonmerged_factor_unn$status,levels=c("not-merged","merged"))
+df_comp_factor$status<-factor(df_comp_factor$status,levels=c("not-merged","merged"))
 
-df_nonmerged_factor_unn$repo_pr_tenure_mnth<-as.integer(df_nonmerged_factor_unn$repo_pr_tenure_mnth)
-df_nonmerged_factor_unn$repo_pr_tenure_mnth<-scale(log(df_nonmerged_factor_unn$repo_pr_tenure_mnth +1))
-df_nonmerged_factor_unn$repo_pr_popularity<-as.integer(df_nonmerged_factor_unn$repo_pr_popularity)
-df_nonmerged_factor_unn$repo_pr_popularity<-scale(log(df_nonmerged_factor_unn$repo_pr_popularity +1))
-df_nonmerged_factor_unn$repo_pr_team_size<-as.integer(df_nonmerged_factor_unn$repo_pr_team_size)
-df_nonmerged_factor_unn$repo_pr_team_size<-scale(log(df_nonmerged_factor_unn$repo_pr_team_size +1))
-df_nonmerged_factor_unn$perc_external_contribs<-as.integer(df_nonmerged_factor_unn$perc_external_contribs)
-df_nonmerged_factor_unn$perc_external_contribs<-scale(log(df_nonmerged_factor_unn$perc_external_contribs +1))
+df_comp_factor$repo_pr_tenure_mnth<-as.integer(df_comp_factor$repo_pr_tenure_mnth)
+df_comp_factor$repo_pr_tenure_mnth<-scale(log(df_comp_factor$repo_pr_tenure_mnth +1))
+df_comp_factor$repo_pr_popularity<-as.integer(df_comp_factor$repo_pr_popularity)
+df_comp_factor$repo_pr_popularity<-scale(log(df_comp_factor$repo_pr_popularity +1))
+df_comp_factor$repo_pr_team_size<-as.integer(df_comp_factor$repo_pr_team_size)
+df_comp_factor$repo_pr_team_size<-scale(log(df_comp_factor$repo_pr_team_size +1))
+df_comp_factor$perc_external_contribs<-as.integer(df_comp_factor$perc_external_contribs)
+df_comp_factor$perc_external_contribs<-scale(log(df_comp_factor$perc_external_contribs +1))
 
-df_nonmerged_factor_unn$closer_country <- factor(df_nonmerged_factor_unn$closer_country)                                    
-df_nonmerged_factor_unn$author_country <- factor(df_nonmerged_factor_unn$author_country)                                    
-df_nonmerged_factor_unn$author_continent <- factor(df_nonmerged_factor_unn$author_continent,levels=c("Asia","Africa","South America","Antarctica", "Unknown", "North America", "Europe", "Oceania"))
+df_comp_factor$closer_country <- factor(df_comp_factor$closer_country)                                    
+df_comp_factor$author_country <- factor(df_comp_factor$author_country)                                    
+df_comp_factor$author_continent <- factor(df_comp_factor$author_continent,levels=c("Asia","Africa","South America","Antarctica", "Unknown", "North America", "Europe", "Oceania"))
                                     
                                     
                                     
-df_nonmerged_factor_unn$prs_experience<-as.integer(df_nonmerged_factor_unn$prs_experience)
-df_nonmerged_factor_unn$prs_experience<-scale(log(df_nonmerged_factor_unn$prs_experience +1))
-df_nonmerged_factor_unn$prs_succ_rate<-as.integer(df_nonmerged_factor_unn$prs_succ_rate)
-df_nonmerged_factor_unn$prs_succ_rate<-scale(log(df_nonmerged_factor_unn$prs_succ_rate +1))
-df_nonmerged_factor_unn$prs_main_team_member<-factor(df_nonmerged_factor_unn$prs_main_team_member,levels=c(0,1))
-df_nonmerged_factor_unn$prs_popularity<-as.integer(df_nonmerged_factor_unn$prs_popularity)
-df_nonmerged_factor_unn$prs_popularity<-scale(log(df_nonmerged_factor_unn$prs_popularity +1))
-df_nonmerged_factor_unn$prs_tenure_mnth<-as.integer(df_nonmerged_factor_unn$prs_tenure_mnth)
-df_nonmerged_factor_unn$prs_tenure_mnth<-scale(log(df_nonmerged_factor_unn$prs_tenure_mnth +1))
-df_nonmerged_factor_unn$comments_counts<-as.integer(df_nonmerged_factor_unn$comments_counts)
-df_nonmerged_factor_unn$comments_counts<-scale(log(df_nonmerged_factor_unn$comments_counts +1))
-df_nonmerged_factor_unn$commit_counts<-as.integer(df_nonmerged_factor_unn$commit_counts)
-df_nonmerged_factor_unn$commit_counts<-scale(log(df_nonmerged_factor_unn$commit_counts +1))
-df_nonmerged_factor_unn$prs_watched_repo<-factor(df_nonmerged_factor_unn$prs_watched_repo,levels=c(0,1))
-df_nonmerged_factor_unn$prs_followed_pri<-factor(df_nonmerged_factor_unn$prs_followed_pri,levels=c(0,1))
-df_nonmerged_factor_unn$same_eth<-factor(df_nonmerged_factor_unn$same_eth,levels=c(0,1))
-df_nonmerged_factor_unn$same_country<-factor(df_nonmerged_factor_unn$same_country,levels=c(0,1))
-df_nonmerged_factor_unn$intra_branch<-factor(df_nonmerged_factor_unn$intra_branch,levels=c(0,1))
+df_comp_factor$prs_experience<-as.integer(df_comp_factor$prs_experience)
+df_comp_factor$prs_experience<-scale(log(df_comp_factor$prs_experience +1))
+df_comp_factor$prs_succ_rate<-as.integer(df_comp_factor$prs_succ_rate)
+df_comp_factor$prs_succ_rate<-scale(log(df_comp_factor$prs_succ_rate +1))
+df_comp_factor$prs_main_team_member<-factor(df_comp_factor$prs_main_team_member,levels=c(0,1))
+df_comp_factor$prs_popularity<-as.integer(df_comp_factor$prs_popularity)
+df_comp_factor$prs_popularity<-scale(log(df_comp_factor$prs_popularity +1))
+df_comp_factor$prs_tenure_mnth<-as.integer(df_comp_factor$prs_tenure_mnth)
+df_comp_factor$prs_tenure_mnth<-scale(log(df_comp_factor$prs_tenure_mnth +1))
+df_comp_factor$comments_counts<-as.integer(df_comp_factor$comments_counts)
+df_comp_factor$comments_counts<-scale(log(df_comp_factor$comments_counts +1))
+df_comp_factor$commit_counts<-as.integer(df_comp_factor$commit_counts)
+df_comp_factor$commit_counts<-scale(log(df_comp_factor$commit_counts +1))
+df_comp_factor$prs_watched_repo<-factor(df_comp_factor$prs_watched_repo,levels=c(0,1))
+df_comp_factor$prs_followed_pri<-factor(df_comp_factor$prs_followed_pri,levels=c(0,1))
+df_comp_factor$same_eth<-factor(df_comp_factor$same_eth,levels=c(0,1))
+df_comp_factor$same_country<-factor(df_comp_factor$same_country,levels=c(0,1))
+df_comp_factor$intra_branch<-factor(df_comp_factor$intra_branch,levels=c(0,1))
 
 
 
@@ -455,7 +455,7 @@ model_2 <- glmer(formula, data = df_sample_reason_encoded, family = binomial, gl
 summary(model_2)
 ```
 
-## selecting the category, getting the data for that category and Factoring the data
+## selecting the category, getting the data for that category and Factoring the data (Depricated as i did it in a function)
 
 ```{r}
 category <- 'Unnecessary'
@@ -538,90 +538,96 @@ df_merged_factored$prs_followed_pri<-factor(df_merged_factored$prs_followed_pri,
 df_merged_factored$same_eth<-factor(df_merged_factored$same_eth,levels=c(0,1))
 df_merged_factored$same_country<-factor(df_merged_factored$same_country,levels=c(0,1))
 df_merged_factored$intra_branch<-factor(df_merged_factored$intra_branch,levels=c(0,1))
+
 ```
+
+## Preprocessing the data as a Function
+```{r}
+preprocess_data <- function(data){
+  
+  #Factorizing and scaling
+  data$status <- factor(data$status, levels = c("not-merged", "merged"))
+  data$repo_pr_tenure_mnth<-as.integer(data$repo_pr_tenure_mnth)
+  data$repo_pr_tenure_mnth<-scale(log(data$repo_pr_tenure_mnth +1))
+  data$repo_pr_popularity<-as.integer(data$repo_pr_popularity)
+  data$repo_pr_popularity<-scale(log(data$repo_pr_popularity +1))
+  data$repo_pr_team_size<-as.integer(data$repo_pr_team_size)
+  data$repo_pr_team_size<-scale(log(data$repo_pr_team_size +1))
+  data$perc_external_contribs<-as.integer(data$perc_external_contribs)
+  data$perc_external_contribs<-scale(log(data$perc_external_contribs +1))
+
+  
+  data$closer_country <- factor(data$closer_country)                                    
+  data$author_country <- factor(data$author_country)                                    
+  data$author_continent <- factor(data$author_continent,levels=c("Asia","Africa","South America","Antarctica", "Unknown", "North America", "Europe", "Oceania"))
+  
+  data$prs_experience<-as.integer(data$prs_experience)
+  data$prs_experience<-scale(log(data$prs_experience +1))
+  data$prs_succ_rate<-as.integer(data$prs_succ_rate)
+  data$prs_succ_rate<-scale(log(data$prs_succ_rate +1))
+  data$prs_main_team_member<-factor(data$prs_main_team_member,levels=c(0,1))
+  data$prs_popularity<-as.integer(data$prs_popularity)
+  data$prs_popularity<-scale(log(data$prs_popularity +1))
+  data$prs_tenure_mnth<-as.integer(data$prs_tenure_mnth)
+  data$prs_tenure_mnth<-scale(log(data$prs_tenure_mnth +1))
+  data$comments_counts<-as.integer(data$comments_counts)
+  data$comments_counts<-scale(log(data$comments_counts +1))
+  data$commit_counts<-as.integer(data$commit_counts)
+  data$commit_counts<-scale(log(data$commit_counts +1))
+  data$prs_watched_repo<-factor(data$prs_watched_repo,levels=c(0,1))
+  data$prs_followed_pri<-factor(data$prs_followed_pri,levels=c(0,1))
+  data$same_eth<-factor(data$same_eth,levels=c(0,1))
+  data$same_country<-factor(data$same_country,levels=c(0,1))
+  data$intra_branch<-factor(data$intra_branch,levels=c(0,1))
+  data$pr_files_changed<-factor(data$pr_files_changed,levels=c(0,1))
+  data$intra_branch<-factor(data$intra_branch,levels=c(0,1))
+  data$pr_files_changed<-as.integer(data$pr_files_changed)
+  data$pr_files_changed<-scale(log(data$pr_files_changed +1))
+  data$pr_lines_changed<-as.integer(data$pr_lines_changed)
+  data$pr_lines_changed<-scale(log(data$pr_lines_changed +1))
+  return(data)
+
+}
+```
+
 
 ## making the samples from merged pull requests from the same repositories of the rejected reason
-
 also bootstrapping and making the model
 
-```{r}
-unique_repo_ids <- unique(df_nonmerged_factor_unn$repo_id)
-
-# Filter the merged pull requests to keep only those with repo_ids in unique_repo_ids
-df_merged_factored <- df_merged_factored[df_merged_factored$repo_id %in% unique_repo_ids, ]
-
-
-
-formula <- status ~  comments_counts + commit_counts + code_changes_counts + author_continent  + author_eth + closer_eth  + prs_pri_same_nationality + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member +
-repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + (1 | repo_id) + (1 | author_id)
-
-# Define a function to fit the glmer model
-fit_glmer_model <- function(data) {
-  # Combine the "Unnecessary" pull requests with the merged pull requests
-  combined_data <- rbind(df_nonmerged_factor_unn, data)
-  
-  # Fit your glmer model on the combined data
-  model <- glmer(formula, data = combined_data, family = binomial,
-                 control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
-  
-  return(model)
-}
-
-# Set the number of bootstrap iterations
-num_bootstraps <- 2  # You can adjust this number as needed
-
-# Create a vector to store bootstrapped model results
-boot_models <- vector("list", length = num_bootstraps)
-
-# Perform bootstrapping
-for (i in 1:num_bootstraps) {
-  # Generate bootstrap indices by sampling with replacement from merged pull requests
-  boot_indices <- sample(1:nrow(df_merged_factored), replace = TRUE)
-  
-  # Extract the bootstrapped sample of merged pull requests
-  bootstrap_sample <- df_merged_factored[boot_indices, ]
-  
-  # Check if the repo_id of each sample is in the unique_repo_ids from "Unnecessary" pull requests
-  # If not, resample until a matching repo_id is found
-  #while (!(bootstrap_sample$repo_id %in% unique_repo_ids)) {
-   # boot_indices <- sample(1:nrow(df_merged_factored), replace = TRUE)
-    #bootstrap_sample <- df_merged_factored[boot_indices, ]
-  colnames(bootstrap_sample) <- colnames(df_nonmerged_factor_unn)
-
-  
-  # Fit the glmer model on the bootstrapped merged data
-  boot_models[[i]] <- fit_glmer_model(bootstrap_sample)
-}
-
-# Display the bootstrapped models
-print(boot_models)
-
-```
-
-
+### Unnecessary Model
 
 ```{r}
 
-#set.seed(44)
+#building the model for Unnecessary
+set.seed(42)
+category <- 'Unnecessary'
+df_nonmerged_factor_unn <- df_nonmerged[df_nonmerged$manual_analysis == category, ]
+
+df_nonmerged_factor_unn <- preprocess_data(df_nonmerged_factor_unn)
+
+df_merged_factored <- preprocess_data(df_merged)
+
+df_nonmerged_factor_unn <- df_nonmerged_factor_unn[, !colnames(df_nonmerged_factor_unn) %in% "manual_analysis"]
+df_merged_factored <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
+
 
 unique_repo_ids <- unique(df_nonmerged_factor_unn$repo_id)
 
-# Filter the merged pull requests to keep only those with repo_ids in unique_repo_ids
+# Filtering the merged pull requests to keep only those with repo_ids in unique_repo_ids
 df_merged_factored <- df_merged_factored[df_merged_factored$repo_id %in% unique_repo_ids, ]
 
 
-formula <- status ~  comments_counts + commit_counts + code_changes_counts + author_continent  + author_eth + closer_eth  + prs_pri_same_nationality + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member +
-repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + (1 | repo_id) + (1 | author_id)
+formula <- status ~  comments_counts + commit_counts + code_changes_counts + prs_pri_same_nationality + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 
 
-num_bootstraps <- 2  # You can adjust this number as needed
+num_bootstraps <- 1
 
 bootstrapped_models <- list()
 
 bootstrapped_parameters <- list()
 sample_size <- nrow(df_nonmerged_factor_unn)
 
-# Perform parametric bootstrapping
+#bootstrapping the sample
 for (i in 1:num_bootstraps) {
   # Resample the data with replacement from merged pull requests
   boot_indices <- sample(1:nrow(df_merged_factored), size = sample_size, replace = TRUE)
@@ -630,15 +636,13 @@ for (i in 1:num_bootstraps) {
   # Combine the "Unnecessary" pull requests with the bootstrapped merged data
   combined_data_boot <- rbind(df_nonmerged_factor_unn, bootstrap_sample)
 
-  print(combined_data_boot[2, ])
-  print(combined_data_boot[7000, ])
   # Refit the model on the combined bootstrapped data
-  boot_model <- glmer(formula, data = combined_data_boot, family = binomial,
+  boot_model_unn <- glmer(formula, data = combined_data_boot, family = binomial,
                       control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
-  bootstrapped_models[[i]] <- boot_model
+  bootstrapped_models[[i]] <- boot_model_unn
 
   # Extract and store the model parameters
-  bootstrapped_parameters[[i]] <- coef(boot_model)
+  bootstrapped_parameters[[i]] <- coef(boot_model_unn)
 }
 
 
@@ -647,12 +651,140 @@ for (i in 1:num_bootstraps) {
 ```
 ```{r}
 for (i in 1:num_bootstraps) {
-  model_summary <- summary(bootstrapped_models[[i]])
+  model_summary_unn <- summary(bootstrapped_models[[i]])
   #conf_intervals <- confint(bootstrapped_models[[i]], which = "fixed")
   
   # Print or analyze the summary and confidence intervals as needed
-  print(model_summary, correlation=TRUE)
+  print(model_summary_unn, correlation=TRUE)
 }
 ```
 
+### Quality Model
+
+```{r}
+set.seed(44)
+category <- 'Quality'
+df_nonmerged_factor_qua <- df_nonmerged[df_nonmerged$manual_analysis == category, ]
+
+df_nonmerged_factor_qua <- preprocess_data(df_nonmerged_factor_qua)
+
+df_merged_factored <- preprocess_data(df_merged)
+
+df_nonmerged_factor_qua <- df_nonmerged_factor_qua[, !colnames(df_nonmerged_factor_qua) %in% "manual_analysis"]
+df_merged_factored <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
+
+
+unique_repo_ids <- unique(df_nonmerged_factor_qua$repo_id)
+
+# Filtering the merged pull requests to keep only those with repo_ids in unique_repo_ids
+df_merged_factored <- df_merged_factored[df_merged_factored$repo_id %in% unique_repo_ids, ]
+
+
+formula <- status ~  comments_counts + commit_counts + code_changes_counts + prs_pri_same_nationality + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+
+
+num_bootstraps <- 1
+
+bootstrapped_models <- list()
+
+bootstrapped_parameters <- list()
+sample_size <- nrow(df_nonmerged_factor_qua)
+
+#bootstrapping the sample
+for (i in 1:num_bootstraps) {
+  # Resample the data with replacement from merged pull requests
+  boot_indices <- sample(1:nrow(df_merged_factored), size = sample_size, replace = TRUE)
+  bootstrap_sample <- df_merged_factored[boot_indices, ]
+  
+  # Combine the "Unnecessary" pull requests with the bootstrapped merged data
+  combined_data_boot <- rbind(df_nonmerged_factor_qua, bootstrap_sample)
+
+  # Refit the model on the combined bootstrapped data
+  boot_model_qua <- glmer(formula, data = combined_data_boot, family = binomial,
+                      control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
+  bootstrapped_models[[i]] <- boot_model_qua
+
+  # Extract and store the model parameters
+  bootstrapped_parameters[[i]] <- coef(boot_model_qua)
+}
+
+
+
+
+```
+
+```{r}
+for (i in 1:num_bootstraps) {
+  model_summary_qua <- summary(bootstrapped_models[[i]])
+  #conf_intervals <- confint(bootstrapped_models[[i]], which = "fixed")
+  
+  # Print or analyze the summary and confidence intervals as needed
+  print(model_summary_qua, correlation=TRUE)
+}
+```   
+
+### Resolved Model
+
+```{r}
+set.seed(44)
+category <- 'Resolved'
+df_nonmerged_factor_res <- df_nonmerged[df_nonmerged$manual_analysis == category, ]
+
+df_nonmerged_factor_res <- preprocess_data(df_nonmerged_factor_res)
+
+df_merged_factored <- preprocess_data(df_merged)
+
+df_nonmerged_factor_res <- df_nonmerged_factor_res[, !colnames(df_nonmerged_factor_res) %in% "manual_analysis"]
+df_merged_factored <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
+
+
+unique_repo_ids <- unique(df_nonmerged_factor_res$repo_id)
+
+# Filtering the merged pull requests to keep only those with repo_ids in unique_repo_ids
+df_merged_factored <- df_merged_factored[df_merged_factored$repo_id %in% unique_repo_ids, ]
+
+
+formula <- status ~  comments_counts + commit_counts + code_changes_counts + prs_pri_same_nationality + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member +
+repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+
+
+num_bootstraps <- 1
+
+bootstrapped_models <- list()
+
+bootstrapped_parameters <- list()
+sample_size <- nrow(df_nonmerged_factor_res)
+
+#bootstrapping the sample
+for (i in 1:num_bootstraps) {
+  # Resample the data with replacement from merged pull requests
+  boot_indices <- sample(1:nrow(df_merged_factored), size = sample_size, replace = TRUE)
+  bootstrap_sample <- df_merged_factored[boot_indices, ]
+  
+  # Combine the "Unnecessary" pull requests with the bootstrapped merged data
+  combined_data_boot <- rbind(df_nonmerged_factor_res, bootstrap_sample)
+
+  # Refit the model on the combined bootstrapped data
+  boot_model_res <- glmer(formula, data = combined_data_boot, family = binomial,
+                      control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
+  bootstrapped_models[[i]] <- boot_model_res
+
+  # Extract and store the model parameters
+  bootstrapped_parameters[[i]] <- coef(boot_model_res)
+}
+
+
+
+
+```
+
+```{r}
+for (i in 1:num_bootstraps) {
+  model_summary_res <- summary(bootstrapped_models[[i]])
+  #conf_intervals <- confint(bootstrapped_models[[i]], which = "fixed")
+  
+  # Print or analyze the summary and confidence intervals as needed
+  print(model_summary_res, correlation=TRUE)
+}
+```
 
