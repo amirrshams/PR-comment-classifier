@@ -591,7 +591,7 @@ preprocess_data <- function(data){
 ```
 
 
-## making the samples from merged pull requests from the same repositories of the rejected reason
+# Building the model for merged pull requests from the same repositories of the rejected reason
 also bootstrapping and making the model
 
 ### Unnecessary Model
@@ -786,5 +786,89 @@ for (i in 1:num_bootstraps) {
   # Print or analyze the summary and confidence intervals as needed
   print(model_summary_res, correlation=TRUE)
 }
+```
+
+### Replaced
+
+```{r}
+set.seed(44)
+category <- 'Replaced'
+df_nonmerged_factor_rep <- df_nonmerged[df_nonmerged$manual_analysis == category, ]
+
+df_nonmerged_factor_rep <- preprocess_data(df_nonmerged_factor_rep)
+
+df_merged_factored <- preprocess_data(df_merged)
+
+df_nonmerged_factor_rep <- df_nonmerged_factor_rep[, !colnames(df_nonmerged_factor_rep) %in% "manual_analysis"]
+df_merged_factored <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
+
+
+unique_repo_ids <- unique(df_nonmerged_factor_rep$repo_id)
+
+# Filtering the merged pull requests to keep only those with repo_ids in unique_repo_ids
+df_merged_factored <- df_merged_factored[df_merged_factored$repo_id %in% unique_repo_ids, ]
+
+
+formula <- status ~  comments_counts + commit_counts + code_changes_counts + prs_pri_same_nationality + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member +
+repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+
+
+num_bootstraps <- 1
+
+bootstrapped_models <- list()
+
+bootstrapped_parameters <- list()
+sample_size <- nrow(df_nonmerged_factor_rep)
+
+#bootstrapping the sample
+for (i in 1:num_bootstraps) {
+  # Resample the data with replacement from merged pull requests
+  boot_indices <- sample(1:nrow(df_merged_factored), size = sample_size, replace = TRUE)
+  bootstrap_sample <- df_merged_factored[boot_indices, ]
+  
+  # Combine the "Unnecessary" pull requests with the bootstrapped merged data
+  combined_data_boot <- rbind(df_nonmerged_factor_rep, bootstrap_sample)
+
+  # Refit the model on the combined bootstrapped data
+  boot_model_rep <- glmer(formula, data = combined_data_boot, family = binomial,
+                      control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
+  bootstrapped_models[[i]] <- boot_model_rep
+
+  # Extract and store the model parameters
+  bootstrapped_parameters[[i]] <- coef(boot_model_rep)
+}
+
+
+
+
+```
+
+
+```{r}
+for (i in 1:num_bootstraps) {
+  model_summary_rep <- summary(bootstrapped_models[[i]])
+  #conf_intervals <- confint(bootstrapped_models[[i]], which = "fixed")
+  
+  # Print or analyze the summary and confidence intervals as needed
+  print(model_summary_rep, correlation=TRUE)
+}
+```
+
+# Comparing the models
+
+```{r}
+extract_model_metrics <- function(fitted_model) {
+  
+  # Extract fixed effects from model summary
+  fixed_effects <- summary(fitted_model)$coefficients
+  
+  # Extract required metrics: Estimate, Std. Error, and p-value
+  coeff_data <- fixed_effects[, c("Estimate", "Std. Error", "Pr(>|z|)")]
+  
+  return(coeff_data)
+}
+
+
+
 ```
 
