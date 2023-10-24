@@ -21,8 +21,8 @@ library(e1071)
 library(ggplot2)
 
 #loading the data
-df_comp <- read_csv("/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Dataset/Dataset/pr_final_April_2023.csv")
-df_TSE <- read_csv("/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Dataset/Reza's Dataset/TSE paper/2020-TSE-Developers-Perceptible-Ethnicity-and-PR-evaluation-main/Dataset/pull_requests.csv")
+df_comp <- read_csv("/home/a2shamso/projects/def-m2nagapp/a2shamso/pr_classification/dataset/pr_final_April_2023.csv")
+df_TSE <- read_csv("/home/a2shamso/projects/def-m2nagapp/a2shamso/pr_classification/dataset/pull_requests.csv")
 
 #getting other important features
 df_comp <- left_join(df_comp, select(df_TSE, pr_id, prs_pri_same_nationality, prs_experience, prs_succ_rate, prs_popularity, prs_watched_repo, prs_followed_pri, prs_tenure_mnth, prs_main_team_member, repo_pr_tenure_mnth, repo_pr_popularity,repo_pr_team_size, perc_external_contribs, pr_opened_at, pr_files_changed, pr_lines_changed, intra_branch) , by= "pr_id", all.y = TRUE)
