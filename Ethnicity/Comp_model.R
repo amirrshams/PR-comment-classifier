@@ -1,4 +1,4 @@
-# R script file to run the big dataset model
+# R script file to run the comp dataset model
 
 #importing libraries
 library(readr)
@@ -84,6 +84,10 @@ formula <- status ~  comments_counts + commit_counts + code_changes_counts + prs
 model <- glmer(formula, data = df_comp_factor, family = binomial,
                         control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
 
+fixed_effects <- fixef(model)
+odds_ratios <- exp(fixed_effects)
 print(model, correlation=TRUE)
 print(summary(model))
+print(odds_ratios)
+
 
