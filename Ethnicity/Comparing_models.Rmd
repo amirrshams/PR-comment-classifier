@@ -18,6 +18,7 @@ library(texreg)
 library(plyr)
 library(xtable)
 library(splitstackshape)
+library(scales)
 
 library(Hmisc)
 library(lmerTest)
@@ -676,7 +677,60 @@ class(coef(boot_model_unn))
 
 
 
-### Unnecessary Model
+# Normalization
+
+```{r}
+# Factoring and scaling 
+preprocess_data_norm <- function(data){
+  
+  #Factorizing and scaling
+  data$status <- factor(data$status, levels = c("not-merged", "merged"))
+  data$repo_pr_tenure_mnth<-as.integer(data$repo_pr_tenure_mnth)
+  data$repo_pr_popularity<-as.integer(data$repo_pr_popularity)
+  data$repo_pr_team_size<-as.integer(data$repo_pr_team_size)
+  data$perc_external_contribs<-as.integer(data$perc_external_contribs)
+
+  
+  data$closer_country <- factor(data$closer_country)                                    
+  data$author_country <- factor(data$author_country)                                    
+  data$author_continent <- factor(data$author_continent,levels=c("Asia","Africa","South America","Antarctica", "Unknown", "North America", "Europe", "Oceania"))
+  
+  data$prs_experience<-as.integer(data$prs_experience)
+  data$prs_succ_rate<-as.integer(data$prs_succ_rate)
+  data$prs_main_team_member<-factor(data$prs_main_team_member,levels=c(0,1))
+  data$prs_watched_repo<-factor(data$prs_watched_repo,levels=c(0,1))
+  data$prs_followed_pri<-factor(data$prs_followed_pri,levels=c(0,1))
+  data$same_eth<-factor(data$same_eth,levels=c(0,1))
+  data$same_country<-factor(data$same_country,levels=c(0,1))
+  data$intra_branch<-factor(data$intra_branch,levels=c(0,1))
+  data$pr_files_changed<-factor(data$pr_files_changed,levels=c(0,1))
+  data$intra_branch<-factor(data$intra_branch,levels=c(0,1))
+  data$pr_files_changed<-as.integer(data$pr_files_changed)
+  data$pr_lines_changed<-as.integer(data$pr_lines_changed)
+  
+  
+    # List of columns to normalize
+  columns_to_normalize <- c("comments_counts", "commit_counts", "code_changes_counts", "prs_experience", 
+                            "prs_succ_rate", "prs_popularity", "prs_tenure_mnth", "repo_pr_tenure_mnth", 
+                            "repo_pr_popularity", "repo_pr_team_size", "perc_external_contribs", 
+                            "pr_files_changed", "pr_lines_changed")
+  
+  for (col in columns_to_normalize) {
+    data[[col]] <- rescale(data[[col]])
+  }
+
+  return(data)
+
+}
+
+df_nonmerged_factor <- preprocess_data_norm(df_nonmerged)
+
+df_merged_factored <- preprocess_data_norm(df_merged)
+
+
+```
+
+### Unnecessary Model normalization for each class(depricated for now, might come back later to it)
 
 ```{r}
 
@@ -685,9 +739,62 @@ set.seed(42)
 category <- 'Unnecessary'
 df_nonmerged_factor_unn <- df_nonmerged[df_nonmerged$manual_analysis == category, ]
 
-df_nonmerged_factor_unn <- preprocess_data(df_nonmerged_factor_unn)
+df_nonmerged_factor_unn <- preprocess_data_norm(df_nonmerged_factor_unn)
 
-df_merged_factored <- preprocess_data(df_merged)
+unique_repo_ids <- unique(df_nonmerged_factor_unn$repo_id)
+
+# Filtering the merged pull requests to keep only those with repo_ids in unique_repo_ids
+df_merged_factored_unn <- df_merged[df_merged$repo_id %in% unique_repo_ids, ]
+df_merged_factored_unn <- preprocess_data_norm(df_merged_factored_unn)
+
+df_nonmerged_factor_unn <- df_nonmerged_factor_unn[, !colnames(df_nonmerged_factor_unn) %in% "manual_analysis"]
+df_merged_factored_unn <- df_merged_factored_unn[, !colnames(df_merged_factored_unn) %in% "checked"]
+
+
+
+
+formula <- status ~  comments_counts + commit_counts + code_changes_counts  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+
+
+
+sample_size <- nrow(df_nonmerged_factor_unn)
+
+indices <- sample(1:nrow(df_merged_factored_unn), size = sample_size, replace = TRUE)
+sample <- df_merged_factored_unn[indices, ]
+
+combined_data_unn <- rbind(df_nonmerged_factor_unn, sample)
+
+model_unn <- glmer(formula, data = combined_data_unn, family = binomial,
+                    control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
+
+
+```
+
+```{r}
+model_summary_unn <- summary(model_unn)
+fixed_effects_unn <- fixef(model_unn)
+odds_ratios_unn <- exp(fixed_effects)
+#conf_intervals <- confint(bootstrapped_models[[i]], which = "fixed")
+print(model_summary_unn, correlation=TRUE)
+print(odds_ratios_unn)
+car::vif(model_unn)
+
+
+```
+
+### Unnecessary
+```{r}
+
+#building the model for Unnecessary
+set.seed(42)
+#df_nonmerged_factor <- preprocess_data_norm(df_nonmerged)
+
+category <- 'Unnecessary'
+df_nonmerged_factor_unn <- df_nonmerged_factor[df_nonmerged_factor$manual_analysis == category, ]
+
+#df_nonmerged_factor_unn <- preprocess_data(df_nonmerged_factor_unn)
+
+#df_merged_factored <- preprocess_data_norm(df_merged)
 
 df_nonmerged_factor_unn <- df_nonmerged_factor_unn[, !colnames(df_nonmerged_factor_unn) %in% "manual_analysis"]
 df_merged_factored <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
@@ -727,8 +834,6 @@ car::vif(model_unn)
 
 
 ```
-
-
 ### Quality Model
 
 ```{r}
@@ -1210,6 +1315,61 @@ car::vif(model_suc)
 ```
 
 
+# Building the model for labeled dataset
+
+
+```{r}
+hist(df_nonmerged_factor$comments_counts, main = "Distribution of Comments Counts", xlab = "Comments Counts", col = "lightblue", border = "black")
+
+
+```
+
+
+```{r}
+set.seed(44)
+
+#df_nonmerged_factor <- preprocess_data_norm(df_nonmerged)
+
+#df_merged_factored <- preprocess_data_norm(df_merged)
+
+df_nonmerged_factor <- df_nonmerged_factor[, !colnames(df_nonmerged_factor) %in% "manual_analysis"]
+df_merged_factored <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
+
+
+unique_repo_ids <- unique(df_nonmerged_factor$repo_id)
+
+# Filtering the merged pull requests to keep only those with repo_ids in unique_repo_ids
+df_merged_factored <- df_merged_factored[df_merged_factored$repo_id %in% unique_repo_ids, ]
+
+
+formula <- status ~  comments_counts + commit_counts + code_changes_counts + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + prs_followed_pri + perc_external_contribs + intra_branch +pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+
+sample_size <- nrow(df_nonmerged_factor)
+
+indices <- sample(1:nrow(df_merged_factored), size = sample_size, replace = TRUE)
+sample <- df_merged_factored[indices, ]
+
+combined_data <- rbind(df_nonmerged_factor, sample)
+
+model_labeled <- glmer(formula, data = combined_data, family = binomial,
+                    control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
+
+
+```
+
+```{r}
+model_summary <- summary(model_labeled)
+fixed_effects <- fixef(model_labeled)
+odds_ratios <- exp(fixed_effects)
+#conf_intervals <- confint(bootstrapped_models[[i]], which = "fixed")
+print('The model summary and correlation:')
+print(model_summary, correlation=TRUE)
+print('Odds Ratio:')
+print(odds_ratios)
+print('VIF:')
+car::vif(model_labeled)
+
+```
 # Comparing the models
 
 ```{r}
