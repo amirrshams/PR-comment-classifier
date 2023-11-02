@@ -31,8 +31,6 @@ df_nonmerged <- read_csv("/Users/amirrshams/Library/CloudStorage/OneDrive-Univer
 df_merged <- read_csv("/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Dataset/Dataset/Merged/pr_merged_final_April_2023.csv")
 df_comp <- read_csv("/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Dataset/Dataset/pr_final_April_2023.csv")
 df_TSE <- read_csv("/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Dataset/Reza's Dataset/TSE paper/2020-TSE-Developers-Perceptible-Ethnicity-and-PR-evaluation-main/Dataset/pull_requests.csv")
-df_Ayushi <- read_csv("/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Dataset/Ayushi_Dataset/new_pullreq.csv")
-
 ```
 
 ```{r}
@@ -75,7 +73,7 @@ df_comp <- df_comp %>%
   select(-c(closer_id))
 ```
 
-# Building the model in rejected categories
+# Building the model in rejected categories(Depricated)
 
 for one rejected category against all the other categories. here for testing we are going to use \## Encoding the manual analysis label and factoring the rest
 
@@ -183,7 +181,7 @@ effect_size_glmer_model = anova(glmer_model_unnecessary_we,test='Chisq')
 print(effect_size_glmer_model)
 ```
 
-# Building the model for all merged and nonmerged pull reqests
+# Building the model for all merged and nonmerged pull reqests (Depricated)
 
 this would be based on status of the pull request
 
@@ -331,7 +329,7 @@ print(effect_size_glmer_model)
 summary(model)
 ```
 
-# Building the model in rejected categories with samples of merged
+# Building the model in rejected categories with samples of merged (Depricated)
 
 ## Sampling the Data from merged prs based on nonmerged prs rejection reasons (Depricated as no bootstrapping)
 
@@ -685,18 +683,39 @@ preprocess_data_norm <- function(data){
   
   #Factorizing and scaling
   data$status <- factor(data$status, levels = c("not-merged", "merged"))
-  data$repo_pr_tenure_mnth<-as.integer(data$repo_pr_tenure_mnth)
-  data$repo_pr_popularity<-as.integer(data$repo_pr_popularity)
-  data$repo_pr_team_size<-as.integer(data$repo_pr_team_size)
-  data$perc_external_contribs<-as.integer(data$perc_external_contribs)
+
 
   
   data$closer_country <- factor(data$closer_country)                                    
   data$author_country <- factor(data$author_country)                                    
   data$author_continent <- factor(data$author_continent,levels=c("Asia","Africa","South America","Antarctica", "Unknown", "North America", "Europe", "Oceania"))
   
+  data$comments_counts<-as.integer(data$comments_counts)
+  data$comments_counts<-scale(log(data$comments_counts +1))
+  data$commit_counts<-as.integer(data$commit_counts)
+  data$commit_counts<-scale(log(data$commit_counts +1))
+  data$code_changes_counts<-as.integer(data$code_changes_counts)
+  data$code_changes_counts<-scale(log(data$code_changes_counts +1))
   data$prs_experience<-as.integer(data$prs_experience)
+  data$prs_experience<-scale(log(data$prs_experience +1))
   data$prs_succ_rate<-as.integer(data$prs_succ_rate)
+  data$prs_succ_rate<-scale(log(data$prs_succ_rate +1))
+  data$prs_popularity<-as.integer(data$prs_popularity)
+  data$prs_popularity<-scale(log(data$prs_popularity +1))
+  data$prs_tenure_mnth<-as.integer(data$prs_tenure_mnth)
+  data$prs_tenure_mnth<-scale(log(data$prs_tenure_mnth +1))
+  data$repo_pr_tenure_mnth<-as.integer(data$repo_pr_tenure_mnth)
+  data$repo_pr_tenure_mnth<-scale(log(data$repo_pr_tenure_mnth +1))
+  data$repo_pr_popularity<-as.integer(data$repo_pr_popularity)
+  data$repo_pr_popularity<-scale(log(data$repo_pr_popularity +1))
+  data$repo_pr_team_size<-as.integer(data$repo_pr_team_size)
+  data$repo_pr_team_size<-scale(log(data$repo_pr_team_size +1))
+  data$perc_external_contribs<-as.integer(data$perc_external_contribs)
+  data$perc_external_contribs<-scale(log(data$perc_external_contribs +1))
+  data$pr_lines_changed<-as.integer(data$pr_lines_changed)
+  data$pr_lines_changed<-scale(log(data$pr_lines_changed +1))
+                                      
+
   data$prs_main_team_member<-factor(data$prs_main_team_member,levels=c(0,1))
   data$prs_watched_repo<-factor(data$prs_watched_repo,levels=c(0,1))
   data$prs_followed_pri<-factor(data$prs_followed_pri,levels=c(0,1))
@@ -705,19 +724,29 @@ preprocess_data_norm <- function(data){
   data$intra_branch<-factor(data$intra_branch,levels=c(0,1))
   data$pr_files_changed<-factor(data$pr_files_changed,levels=c(0,1))
   data$intra_branch<-factor(data$intra_branch,levels=c(0,1))
-  data$pr_files_changed<-as.integer(data$pr_files_changed)
-  data$pr_lines_changed<-as.integer(data$pr_lines_changed)
+
   
   
+#  data$closer_country <- factor(data$closer_country)                                    
+ # data$author_country <- factor(data$author_country)                                    
+  #data$author_continent <- factor(data$author_continent,levels=c("Asia","Africa","South America","Antarctica", "Unknown", "North America", "Europe", "Oceania"))
+                                      
+                                      
+  data$prs_main_team_member<-factor(data$prs_main_team_member,levels=c(0,1))
+  data$prs_watched_repo<-factor(data$prs_watched_repo,levels=c(0,1))
+  data$prs_followed_pri<-factor(data$prs_followed_pri,levels=c(0,1))
+  data$same_eth<-factor(data$same_eth,levels=c(0,1))
+  data$same_country<-factor(data$same_country,levels=c(0,1))
+  data$intra_branch<-factor(data$intra_branch,levels=c(0,1))
     # List of columns to normalize
-  columns_to_normalize <- c("comments_counts", "commit_counts", "code_changes_counts", "prs_experience", 
-                            "prs_succ_rate", "prs_popularity", "prs_tenure_mnth", "repo_pr_tenure_mnth", 
-                            "repo_pr_popularity", "repo_pr_team_size", "perc_external_contribs", 
-                            "pr_files_changed", "pr_lines_changed")
+  #columns_to_normalize <- c("comments_counts", "commit_counts", "code_changes_counts", "prs_experience", 
+   #                         "prs_succ_rate", "prs_popularity", "prs_tenure_mnth", "repo_pr_tenure_mnth", 
+    #                        "repo_pr_popularity", "repo_pr_team_size", "perc_external_contribs", 
+     #                       "pr_files_changed", "pr_lines_changed")
   
-  for (col in columns_to_normalize) {
-    data[[col]] <- rescale(data[[col]])
-  }
+  #for (col in columns_to_normalize) {
+   # data[[col]] <- rescale(data[[col]])
+  #}
 
   return(data)
 
@@ -773,7 +802,7 @@ model_unn <- glmer(formula, data = combined_data_unn, family = binomial,
 ```{r}
 model_summary_unn <- summary(model_unn)
 fixed_effects_unn <- fixef(model_unn)
-odds_ratios_unn <- exp(fixed_effects)
+odds_ratios_unn <- exp(fixed_effects_unn)
 #conf_intervals <- confint(bootstrapped_models[[i]], which = "fixed")
 print(model_summary_unn, correlation=TRUE)
 print(odds_ratios_unn)
@@ -786,7 +815,7 @@ car::vif(model_unn)
 ```{r}
 
 #building the model for Unnecessary
-set.seed(42)
+set.seed(46)
 #df_nonmerged_factor <- preprocess_data_norm(df_nonmerged)
 
 category <- 'Unnecessary'
@@ -797,23 +826,23 @@ df_nonmerged_factor_unn <- df_nonmerged_factor[df_nonmerged_factor$manual_analys
 #df_merged_factored <- preprocess_data_norm(df_merged)
 
 df_nonmerged_factor_unn <- df_nonmerged_factor_unn[, !colnames(df_nonmerged_factor_unn) %in% "manual_analysis"]
-df_merged_factored <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
+df_merged_factored_unn <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
 
 
 unique_repo_ids <- unique(df_nonmerged_factor_unn$repo_id)
 
 # Filtering the merged pull requests to keep only those with repo_ids in unique_repo_ids
-df_merged_factored <- df_merged_factored[df_merged_factored$repo_id %in% unique_repo_ids, ]
+df_merged_factored_unn <- df_merged_factored_unn[df_merged_factored_unn$repo_id %in% unique_repo_ids, ]
 
 
-formula <- status ~  comments_counts + commit_counts + code_changes_counts  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~ comments_counts + commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 
 
-
+#comments_counts + 
 sample_size <- nrow(df_nonmerged_factor_unn)
 
-indices <- sample(1:nrow(df_merged_factored), size = sample_size, replace = TRUE)
-sample <- df_merged_factored[indices, ]
+indices <- sample(1:nrow(df_merged_factored_unn), size = sample_size, replace = TRUE)
+sample <- df_merged_factored_unn[indices, ]
 
 combined_data_unn <- rbind(df_nonmerged_factor_unn, sample)
 
@@ -822,46 +851,52 @@ model_unn <- glmer(formula, data = combined_data_unn, family = binomial,
 
 
 ```
-
+```{r}
+#See what features have more than 3 in VIF
+print('VIF:')
+car::vif(model_unn)
+```
 ```{r}
 model_summary_unn <- summary(model_unn)
 fixed_effects_unn <- fixef(model_unn)
-odds_ratios_unn <- exp(fixed_effects)
+odds_ratios_unn <- exp(fixed_effects_unn)
 #conf_intervals <- confint(bootstrapped_models[[i]], which = "fixed")
+print('The model summary and correlation:')
 print(model_summary_unn, correlation=TRUE)
+print('Odds Ratio:')
 print(odds_ratios_unn)
-car::vif(model_unn)
-
-
 ```
 ### Quality Model
-
 ```{r}
-set.seed(44)
+#building the model for Quality
+set.seed(46)
+#df_nonmerged_factor <- preprocess_data_norm(df_nonmerged)
+
 category <- 'Quality'
-df_nonmerged_factor_qua <- df_nonmerged[df_nonmerged$manual_analysis == category, ]
+df_nonmerged_factor_qua <- df_nonmerged_factor[df_nonmerged_factor$manual_analysis == category, ]
 
-df_nonmerged_factor_qua <- preprocess_data(df_nonmerged_factor_qua)
+#df_nonmerged_factor_qua <- preprocess_data(df_nonmerged_factor_qua)
 
-df_merged_factored <- preprocess_data(df_merged)
+#df_merged_factored <- preprocess_data_norm(df_merged)
 
 df_nonmerged_factor_qua <- df_nonmerged_factor_qua[, !colnames(df_nonmerged_factor_qua) %in% "manual_analysis"]
-df_merged_factored <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
+df_merged_factored_qua <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
 
 
 unique_repo_ids <- unique(df_nonmerged_factor_qua$repo_id)
 
 # Filtering the merged pull requests to keep only those with repo_ids in unique_repo_ids
-df_merged_factored <- df_merged_factored[df_merged_factored$repo_id %in% unique_repo_ids, ]
+df_merged_factored_qua <- df_merged_factored_qua[df_merged_factored_qua$repo_id %in% unique_repo_ids, ]
 
 
 formula <- status ~  comments_counts + commit_counts + code_changes_counts  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 
 
+
 sample_size <- nrow(df_nonmerged_factor_qua)
 
-indices <- sample(1:nrow(df_merged_factored), size = sample_size, replace = TRUE)
-sample <- df_merged_factored[indices, ]
+indices <- sample(1:nrow(df_merged_factored_qua), size = sample_size, replace = TRUE)
+sample <- df_merged_factored_qua[indices, ]
 
 combined_data_qua <- rbind(df_nonmerged_factor_qua, sample)
 
@@ -869,53 +904,59 @@ model_qua <- glmer(formula, data = combined_data_qua, family = binomial,
                     control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
 
 
-
 ```
+```{r}
+#See what features have more than 3 in VIF
+print('VIF:')
+car::vif(model_qua)
+```
+
+
 
 ```{r}
 model_summary_qua <- summary(model_qua)
 fixed_effects_qua <- fixef(model_qua)
-odds_ratios_qua <- exp(fixed_effects)
+odds_ratios_qua <- exp(fixed_effects_qua)
 #conf_intervals <- confint(bootstrapped_models[[i]], which = "fixed")
 print('The model summary and correlation:')
 print(model_summary_qua, correlation=TRUE)
 print('Odds Ratio:')
 print(odds_ratios_qua)
-print('VIF:')
-car::vif(model_qua)
-
-
-```   
+```
 
 ### Resolved Model
 
 ```{r}
-set.seed(44)
+
+#building the model for Resolved
+set.seed(46)
+#df_nonmerged_factor <- preprocess_data_norm(df_nonmerged)
+
 category <- 'Resolved'
-df_nonmerged_factor_res <- df_nonmerged[df_nonmerged$manual_analysis == category, ]
+df_nonmerged_factor_res <- df_nonmerged_factor[df_nonmerged_factor$manual_analysis == category, ]
 
-df_nonmerged_factor_res <- preprocess_data(df_nonmerged_factor_res)
+#df_nonmerged_factor_res <- preprocess_data(df_nonmerged_factor_res)
 
-df_merged_factored <- preprocess_data(df_merged)
+#df_merged_factored <- preprocess_data_norm(df_merged)
 
 df_nonmerged_factor_res <- df_nonmerged_factor_res[, !colnames(df_nonmerged_factor_res) %in% "manual_analysis"]
-df_merged_factored <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
+df_merged_factored_res <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
 
 
 unique_repo_ids <- unique(df_nonmerged_factor_res$repo_id)
 
 # Filtering the merged pull requests to keep only those with repo_ids in unique_repo_ids
-df_merged_factored <- df_merged_factored[df_merged_factored$repo_id %in% unique_repo_ids, ]
+df_merged_factored_res <- df_merged_factored_res[df_merged_factored_res$repo_id %in% unique_repo_ids, ]
 
 
-formula <- status ~  comments_counts + commit_counts + code_changes_counts  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member +
-repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~  comments_counts + commit_counts + code_changes_counts  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+
 
 
 sample_size <- nrow(df_nonmerged_factor_res)
 
-indices <- sample(1:nrow(df_merged_factored), size = sample_size, replace = TRUE)
-sample <- df_merged_factored[indices, ]
+indices <- sample(1:nrow(df_merged_factored_res), size = sample_size, replace = TRUE)
+sample <- df_merged_factored_res[indices, ]
 
 combined_data_res <- rbind(df_nonmerged_factor_res, sample)
 
@@ -923,53 +964,56 @@ model_res <- glmer(formula, data = combined_data_res, family = binomial,
                     control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
 
 
-
 ```
-
+```{r}
+#See what features have more than 3 in VIF
+print('VIF:')
+car::vif(model_res)
+```
 ```{r}
 model_summary_res <- summary(model_res)
 fixed_effects_res <- fixef(model_res)
-odds_ratios_res <- exp(fixed_effects)
+odds_ratios_res <- exp(fixed_effects_res)
 #conf_intervals <- confint(bootstrapped_models[[i]], which = "fixed")
 print('The model summary and correlation:')
 print(model_summary_res, correlation=TRUE)
 print('Odds Ratio:')
 print(odds_ratios_res)
-print('VIF:')
-car::vif(model_res)
-
-
 ```
 
 ### Replaced
 
 ```{r}
-set.seed(44)
+
+#building the model for Replaced
+set.seed(46)
+#df_nonmerged_factor <- preprocess_data_norm(df_nonmerged)
+
 category <- 'Replaced'
-df_nonmerged_factor_rep <- df_nonmerged[df_nonmerged$manual_analysis == category, ]
+df_nonmerged_factor_rep <- df_nonmerged_factor[df_nonmerged_factor$manual_analysis == category, ]
 
-df_nonmerged_factor_rep <- preprocess_data(df_nonmerged_factor_rep)
+#df_nonmerged_factor_rep <- preprocess_data(df_nonmerged_factor_rep)
 
-df_merged_factored <- preprocess_data(df_merged)
+#df_merged_factored <- preprocess_data_norm(df_merged)
 
 df_nonmerged_factor_rep <- df_nonmerged_factor_rep[, !colnames(df_nonmerged_factor_rep) %in% "manual_analysis"]
-df_merged_factored <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
+df_merged_factored_rep <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
 
 
 unique_repo_ids <- unique(df_nonmerged_factor_rep$repo_id)
 
 # Filtering the merged pull requests to keep only those with repo_ids in unique_repo_ids
-df_merged_factored <- df_merged_factored[df_merged_factored$repo_id %in% unique_repo_ids, ]
+df_merged_factored_rep <- df_merged_factored_rep[df_merged_factored_rep$repo_id %in% unique_repo_ids, ]
 
 
-formula <- status ~  comments_counts + commit_counts + code_changes_counts  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member +
-repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~  comments_counts + commit_counts + code_changes_counts  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+
 
 
 sample_size <- nrow(df_nonmerged_factor_rep)
 
-indices <- sample(1:nrow(df_merged_factored), size = sample_size, replace = TRUE)
-sample <- df_merged_factored[indices, ]
+indices <- sample(1:nrow(df_merged_factored_rep), size = sample_size, replace = TRUE)
+sample <- df_merged_factored_rep[indices, ]
 
 combined_data_rep <- rbind(df_nonmerged_factor_rep, sample)
 
@@ -977,64 +1021,74 @@ model_rep <- glmer(formula, data = combined_data_rep, family = binomial,
                     control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
 
 
-
-
-
+```
+```{r}
+#See what featurep have more than 3 in VIF
+print('VIF:')
+car::vif(model_rep) 
 ```
 
 
 ```{r}
 model_summary_rep <- summary(model_rep)
 fixed_effects_rep <- fixef(model_rep)
-odds_ratios_rep <- exp(fixed_effects)
+odds_ratios_rep <- exp(fixed_effects_rep)
 #conf_intervals <- confint(bootstrapped_models[[i]], which = "fixed")
 print('The model summary and correlation:')
 print(model_summary_rep, correlation=TRUE)
 print('Odds Ratio:')
 print(odds_ratios_rep)
-print('VIF:')
-car::vif(model_rep)
-
-
 ```
 ### Duplicate
 ```{r}
 
 #building the model for Duplicate
-set.seed(44)
+set.seed(46)
+#df_nonmerged_factor <- preprocess_data_norm(df_nonmerged)
+
 category <- 'Duplicate'
-df_nonmerged_factor_dup <- df_nonmerged[df_nonmerged$manual_analysis == category, ]
+df_nonmerged_factor_dup <- df_nonmerged_factor[df_nonmerged_factor$manual_analysis == category, ]
 
-df_nonmerged_factor_dup <- preprocess_data(df_nonmerged_factor_dup)
+#df_nonmerged_factor_dup <- preprocess_data(df_nonmerged_factor_dup)
 
-df_merged_factored <- preprocess_data(df_merged)
+#df_merged_factored <- preprocess_data_norm(df_merged)
 
 df_nonmerged_factor_dup <- df_nonmerged_factor_dup[, !colnames(df_nonmerged_factor_dup) %in% "manual_analysis"]
-df_merged_factored <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
+df_merged_factored_dup <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
 
 
 unique_repo_ids <- unique(df_nonmerged_factor_dup$repo_id)
 
 # Filtering the merged pull requests to keep only those with repo_ids in unique_repo_ids
-df_merged_factored <- df_merged_factored[df_merged_factored$repo_id %in% unique_repo_ids, ]
+df_merged_factored_dup <- df_merged_factored_dup[df_merged_factored_dup$repo_id %in% unique_repo_ids, ]
 
 
-formula <- status ~  comments_counts + commit_counts + code_changes_counts + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member +
-repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~  comments_counts + commit_counts + code_changes_counts  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+
 
 
 sample_size <- nrow(df_nonmerged_factor_dup)
 
-indices <- sample(1:nrow(df_merged_factored), size = sample_size, replace = TRUE)
-sample <- df_merged_factored[indices, ]
+indices <- sample(1:nrow(df_merged_factored_dup), size = sample_size, replace = TRUE)
+sample <- df_merged_factored_dup[indices, ]
 
-# Combine the "dupecessary" pull requests with the bootstrapped merged data
 combined_data_dup <- rbind(df_nonmerged_factor_dup, sample)
 
-# Refit the model on the combined bootstrapped data
 model_dup <- glmer(formula, data = combined_data_dup, family = binomial,
                     control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
 
+
+```
+```{r}
+#See what features have more than 3 in VIF
+print('VIF:')
+car::vif(model_dup)
+```
+```{r}
+formula <- status ~  comments_counts + commit_counts + code_changes_counts  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+
+model_dup <- glmer(formula, data = combined_data_dup, family = binomial,
+                    control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
 
 ```
 
@@ -1042,46 +1096,45 @@ model_dup <- glmer(formula, data = combined_data_dup, family = binomial,
 ```{r}
 model_summary_dup <- summary(model_dup)
 fixed_effects_dup <- fixef(model_dup)
-odds_ratios_dup <- exp(fixed_effects)
+odds_ratios_dup <- exp(fixed_effects_dup)
 #conf_intervals <- confint(bootstrapped_models[[i]], which = "fixed")
 print('The model summary and correlation:')
 print(model_summary_dup, correlation=TRUE)
 print('Odds Ratio:')
 print(odds_ratios_dup)
-print('VIF:')
-car::vif(model_dup)
-
-
 ```
 ### Merge Conflict
 ```{r}
 
 #building the model for Merge Conflict
-set.seed(44)
+set.seed(46)
+#df_nonmerged_factor <- preprocess_data_norm(df_nonmerged)
+
 category <- 'Merge Conflict'
-df_nonmerged_factor_mc <- df_nonmerged[df_nonmerged$manual_analysis == category, ]
+df_nonmerged_factor_mc <- df_nonmerged_factor[df_nonmerged_factor$manual_analysis == category, ]
 
-df_nonmerged_factor_mc <- preprocess_data(df_nonmerged_factor_mc)
+#df_nonmerged_factor_mc <- preprocess_data(df_nonmerged_factor_mc)
 
-df_merged_factored <- preprocess_data(df_merged)
+#df_merged_factored <- preprocess_data_norm(df_merged)
 
 df_nonmerged_factor_mc <- df_nonmerged_factor_mc[, !colnames(df_nonmerged_factor_mc) %in% "manual_analysis"]
-df_merged_factored <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
+df_merged_factored_mc <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
 
 
 unique_repo_ids <- unique(df_nonmerged_factor_mc$repo_id)
 
 # Filtering the merged pull requests to keep only those with repo_ids in unique_repo_ids
-df_merged_factored <- df_merged_factored[df_merged_factored$repo_id %in% unique_repo_ids, ]
+df_merged_factored_mc <- df_merged_factored_mc[df_merged_factored_mc$repo_id %in% unique_repo_ids, ]
 
 
-formula <- status ~  comments_counts + commit_counts + code_changes_counts + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member +
-repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~  comments_counts + commit_counts + code_changes_counts  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+
+
 
 sample_size <- nrow(df_nonmerged_factor_mc)
 
-indices <- sample(1:nrow(df_merged_factored), size = sample_size, replace = TRUE)
-sample <- df_merged_factored[indices, ]
+indices <- sample(1:nrow(df_merged_factored_mc), size = sample_size, replace = TRUE)
+sample <- df_merged_factored_mc[indices, ]
 
 combined_data_mc <- rbind(df_nonmerged_factor_mc, sample)
 
@@ -1090,154 +1143,173 @@ model_mc <- glmer(formula, data = combined_data_mc, family = binomial,
 
 
 ```
+```{r}
+#See what features have more than 3 in VIF
+print('VIF:')
+car::vif(model_mc)
+```
+```{r}
+formula <- status ~  comments_counts + commit_counts +code_changes_counts  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member  +repo_pr_tenure_mnth+ perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+
+model_mc <- glmer(formula, data = combined_data_mc, family = binomial,
+                    control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
+
+
+```
+
 
 ```{r}
 model_summary_mc <- summary(model_mc)
 fixed_effects_mc <- fixef(model_mc)
-odds_ratios_mc <- exp(fixed_effects)
+odds_ratios_mc <- exp(fixed_effects_mc)
 #conf_intervals <- confint(bootstrapped_models[[i]], which = "fixed")
 print('The model summary and correlation:')
 print(model_summary_mc, correlation=TRUE)
 print('Odds Ratio:')
 print(odds_ratios_mc)
-print('VIF:')
-car::vif(model_mc)
-
-
 ```
 ### Stale
 ```{r}
 
 #building the model for Stale
-set.seed(44)
+set.seed(46)
+#df_nonmerged_factor <- preprocess_data_norm(df_nonmerged)
+
 category <- 'Stale'
-df_nonmerged_factor_sta <- df_nonmerged[df_nonmerged$manual_analysis == category, ]
+df_nonmerged_factor_sta <- df_nonmerged_factor[df_nonmerged_factor$manual_analysis == category, ]
 
-df_nonmerged_factor_sta <- preprocess_data(df_nonmerged_factor_sta)
+#df_nonmerged_factor_sta <- preprocess_data(df_nonmerged_factor_sta)
 
-df_merged_factored <- preprocess_data(df_merged)
+#df_merged_factored <- preprocess_data_norm(df_merged)
 
 df_nonmerged_factor_sta <- df_nonmerged_factor_sta[, !colnames(df_nonmerged_factor_sta) %in% "manual_analysis"]
-df_merged_factored <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
+df_merged_factored_sta <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
 
 
 unique_repo_ids <- unique(df_nonmerged_factor_sta$repo_id)
 
 # Filtering the merged pull requests to keep only those with repo_ids in unique_repo_ids
-df_merged_factored <- df_merged_factored[df_merged_factored$repo_id %in% unique_repo_ids, ]
+df_merged_factored_sta <- df_merged_factored_sta[df_merged_factored_sta$repo_id %in% unique_repo_ids, ]
 
 
-formula <- status ~  comments_counts + commit_counts + code_changes_counts + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member +
-repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~  comments_counts + commit_counts + code_changes_counts  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+
+
 
 sample_size <- nrow(df_nonmerged_factor_sta)
 
-indices <- sample(1:nrow(df_merged_factored), size = sample_size, replace = TRUE)
-sample <- df_merged_factored[indices, ]
+indices <- sample(1:nrow(df_merged_factored_sta), size = sample_size, replace = TRUE)
+sample <- df_merged_factored_sta[indices, ]
 
 combined_data_sta <- rbind(df_nonmerged_factor_sta, sample)
 
 model_sta <- glmer(formula, data = combined_data_sta, family = binomial,
                     control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
 
-```
 
+```
+```{r}
+#See what featuers have more than 3 in VIF
+print('VIF:')
+car::vif(model_sta)
+```
 ```{r}
 model_summary_sta <- summary(model_sta)
 fixed_effects_sta <- fixef(model_sta)
-odds_ratios_sta <- exp(fixed_effects)
+odds_ratios_sta <- exp(fixed_effects_sta)
 #conf_intervals <- confint(bootstrapped_models[[i]], which = "fixed")
 print('The model summary and correlation:')
 print(model_summary_sta, correlation=TRUE)
 print('Odds Ratio:')
 print(odds_ratios_sta)
-print('VIF:')
-car::vif(model_sta)
-
-
 ```
 ### No Comment
 ```{r}
-
 #building the model for No Comment
-set.seed(43)
+set.seed(46)
+#df_nonmerged_factor <- preprocess_data_norm(df_nonmerged)
+
 category <- 'No Comment'
-df_nonmerged_factor_nc <- df_nonmerged[df_nonmerged$manual_analysis == category, ]
+df_nonmerged_factor_nc <- df_nonmerged_factor[df_nonmerged_factor$manual_analysis == category, ]
 
-df_nonmerged_factor_nc <- preprocess_data(df_nonmerged_factor_nc)
+#df_nonmerged_factor_nc <- preprocess_data(df_nonmerged_factor_nc)
 
-df_merged_factored <- preprocess_data(df_merged)
+#df_merged_factored <- preprocess_data_norm(df_merged)
 
 df_nonmerged_factor_nc <- df_nonmerged_factor_nc[, !colnames(df_nonmerged_factor_nc) %in% "manual_analysis"]
-df_merged_factored <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
+df_merged_factored_nc <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
 
 
 unique_repo_ids <- unique(df_nonmerged_factor_nc$repo_id)
 
 # Filtering the merged pull requests to keep only those with repo_ids in unique_repo_ids
-df_merged_factored <- df_merged_factored[df_merged_factored$repo_id %in% unique_repo_ids, ]
+df_merged_factored_nc <- df_merged_factored_nc[df_merged_factored_nc$repo_id %in% unique_repo_ids, ]
 
 
-formula <- status ~  commit_counts + code_changes_counts + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member +
-repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~  commit_counts + code_changes_counts  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+
+
 
 sample_size <- nrow(df_nonmerged_factor_nc)
 
-indices <- sample(1:nrow(df_merged_factored), size = sample_size, replace = TRUE)
-sample <- df_merged_factored[indices, ]
+indices <- sample(1:nrow(df_merged_factored_nc), size = sample_size, replace = TRUE)
+sample <- df_merged_factored_nc[indices, ]
 
 combined_data_nc <- rbind(df_nonmerged_factor_nc, sample)
 
 model_nc <- glmer(formula, data = combined_data_nc, family = binomial,
                     control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
+
+
 ```
-
-
-
+```{r}
+#See what featuers have more than 3 in VIF
+print('VIF:')
+car::vif(model_nc)
+```
 ```{r}
 model_summary_nc <- summary(model_nc)
 fixed_effects_nc <- fixef(model_nc)
-odds_ratios_nc <- exp(fixed_effects)
+odds_ratios_nc <- exp(fixed_effects_nc)
 #conf_intervals <- confint(bootstrapped_models[[i]], which = "fixed")
 print('The model summary and correlation:')
 print(model_summary_nc, correlation=TRUE)
 print('Odds Ratio:')
 print(odds_ratios_nc)
-print('VIF:')
-car::vif(model_nc)
 ```
-```{r}
-unique(df_nonmerged$manual_analysis)
-```
+
 ### No Reason
 ```{r}
 
 #building the model for No Reason
-set.seed(44)
+set.seed(46)
+#df_nonmerged_factor <- preprocess_data_norm(df_nonmerged)
+
 category <- 'No Reason'
-df_nonmerged_factor_nr <- df_nonmerged[df_nonmerged$manual_analysis == category, ]
+df_nonmerged_factor_nr <- df_nonmerged_factor[df_nonmerged_factor$manual_analysis == category, ]
 
-df_nonmerged_factor_nr <- preprocess_data(df_nonmerged_factor_nr)
+#df_nonmerged_factor_nr <- preprocess_data(df_nonmerged_factor_nr)
 
-df_merged_factored <- preprocess_data(df_merged)
+#df_merged_factored <- preprocess_data_norm(df_merged)
 
 df_nonmerged_factor_nr <- df_nonmerged_factor_nr[, !colnames(df_nonmerged_factor_nr) %in% "manual_analysis"]
-df_merged_factored <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
+df_merged_factored_nr <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
 
 
 unique_repo_ids <- unique(df_nonmerged_factor_nr$repo_id)
 
 # Filtering the merged pull requests to keep only those with repo_ids in unique_repo_ids
-df_merged_factored <- df_merged_factored[df_merged_factored$repo_id %in% unique_repo_ids, ]
+df_merged_factored_nr <- df_merged_factored_nr[df_merged_factored_nr$repo_id %in% unique_repo_ids, ]
 
 
-formula <- status ~  comments_counts + commit_counts + code_changes_counts + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member +
-repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~  comments_counts + commit_counts + code_changes_counts  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+
+
 
 sample_size <- nrow(df_nonmerged_factor_nr)
 
-indices <- sample(1:nrow(df_merged_factored), size = sample_size, replace = TRUE)
-sample <- df_merged_factored[indices, ]
+indices <- sample(1:nrow(df_merged_factored_nr), size = sample_size, replace = TRUE)
+sample <- df_merged_factored_nr[indices, ]
 
 combined_data_nr <- rbind(df_nonmerged_factor_nr, sample)
 
@@ -1246,50 +1318,62 @@ model_nr <- glmer(formula, data = combined_data_nr, family = binomial,
 
 
 ```
+```{r}
+#See what featuers have more than 3 in VIF
+print('VIF:')
+car::vif(model_nr)
+```
+```{r}
+
+formula <- status ~  comments_counts + commit_counts + code_changes_counts  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth  + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+
+model_nr <- glmer(formula, data = combined_data_nr, family = binomial,
+                    control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
+
+```
 
 ```{r}
 model_summary_nr <- summary(model_nr)
 fixed_effects_nr <- fixef(model_nr)
-odds_ratios_nr <- exp(fixed_effects)
+odds_ratios_nr <- exp(fixed_effects_nr)
 #conf_intervals <- confint(bootstrapped_models[[i]], which = "fixed")
 print('The model summary and correlation:')
 print(model_summary_nr, correlation=TRUE)
 print('Odds Ratio:')
 print(odds_ratios_nr)
-print('VIF:')
-car::vif(model_nr)
-
-
 ```
 ### Successful
 ```{r}
 
 #building the model for Successful
-set.seed(44)
+set.seed(46)
+#df_nonmerged_factor <- preprocess_data_norm(df_nonmerged)
+
 category <- 'Successful'
-df_nonmerged_factor_suc <- df_nonmerged[df_nonmerged$manual_analysis == category, ]
+df_nonmerged_factor_suc <- df_nonmerged_factor[df_nonmerged_factor$manual_analysis == category, ]
 
-df_nonmerged_factor_suc <- preprocess_data(df_nonmerged_factor_suc)
+#df_nonmerged_factor_suc <- preprocess_data(df_nonmerged_factor_suc)
 
-df_merged_factored <- preprocess_data(df_merged)
+#df_merged_factored <- preprocess_data_norm(df_merged)
 
 df_nonmerged_factor_suc <- df_nonmerged_factor_suc[, !colnames(df_nonmerged_factor_suc) %in% "manual_analysis"]
-df_merged_factored <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
+df_merged_factored_suc <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
 
-
+ 
 unique_repo_ids <- unique(df_nonmerged_factor_suc$repo_id)
 
 # Filtering the merged pull requests to keep only those with repo_ids in unique_repo_ids
-df_merged_factored <- df_merged_factored[df_merged_factored$repo_id %in% unique_repo_ids, ]
+df_merged_factored_suc <- df_merged_factored_suc[df_merged_factored_suc$repo_id %in% unique_repo_ids, ]
 
 
-formula <- status ~  comments_counts + commit_counts + code_changes_counts + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member +
-repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~  comments_counts + commit_counts + code_changes_counts  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+
+
 
 sample_size <- nrow(df_nonmerged_factor_suc)
 
-indices <- sample(1:nrow(df_merged_factored), size = sample_size, replace = TRUE)
-sample <- df_merged_factored[indices, ]
+indices <- sample(1:nrow(df_merged_factored_suc), size = sample_size, replace = TRUE)
+sample <- df_merged_factored_suc[indices, ]
 
 combined_data_suc <- rbind(df_nonmerged_factor_suc, sample)
 
@@ -1298,22 +1382,21 @@ model_suc <- glmer(formula, data = combined_data_suc, family = binomial,
 
 
 ```
-
+```{r}
+#See what featuers have more than 3 in VIF
+print('VIF:')
+car::vif(model_suc)
+```
 ```{r}
 model_summary_suc <- summary(model_suc)
 fixed_effects_suc <- fixef(model_suc)
-odds_ratios_suc <- exp(fixed_effects)
+odds_ratios_suc <- exp(fixed_effects_suc)
 #conf_intervals <- confint(bootstrapped_models[[i]], which = "fixed")
 print('The model summary and correlation:')
 print(model_summary_suc, correlation=TRUE)
 print('Odds Ratio:')
 print(odds_ratios_suc)
-print('VIF:')
-car::vif(model_suc)
-
-
 ```
-
 
 # Building the model for labeled dataset
 
@@ -1326,7 +1409,7 @@ hist(df_nonmerged_factor$comments_counts, main = "Distribution of Comments Count
 
 
 ```{r}
-set.seed(44)
+set.seed(46)
 
 #df_nonmerged_factor <- preprocess_data_norm(df_nonmerged)
 
