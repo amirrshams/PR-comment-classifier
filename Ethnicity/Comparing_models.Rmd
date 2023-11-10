@@ -681,7 +681,7 @@ class(coef(boot_model_unn))
 # Factoring and scaling 
 preprocess_data_norm <- function(data){
   
-  #Factorizing and scaling
+
   data$status <- factor(data$status, levels = c("not-merged", "merged"))
 
 
