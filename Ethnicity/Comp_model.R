@@ -77,29 +77,19 @@ preprocess_data_norm <- function(data){
   data$intra_branch<-factor(data$intra_branch,levels=c(0,1))
 
   
-  
-    # List of columns to normalize
-  # columns_to_normalize <- c("comments_counts", "commit_counts", "code_changes_counts", "prs_experience", 
-  #                           "prs_succ_rate", "prs_popularity", "prs_tenure_mnth", "repo_pr_tenure_mnth", 
-  #                           "repo_pr_popularity", "repo_pr_team_size", "perc_external_contribs", 
-  #                           "pr_files_changed", "pr_lines_changed")
-  
-  # for (col in columns_to_normalize) {
-  #   data[[col]] <- rescale(data[[col]])
-  # }
 
   return(data)
 
 }
 
-df_comp_factor <- preprocess_data_norm(df_comp)
+# df_comp_factor <- preprocess_data_norm(df_comp)
 
 
 formula <- status ~  comments_counts + commit_counts + code_changes_counts + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member +
   repo_pr_tenure_mnth + prs_followed_pri + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 
 
-model_all <- glmer(formula, data = df_comp_factor, family = binomial,
+model_all <- glmer(formula, data = df_comp, family = binomial,
                         control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
 
 model_all_summary <- summary(model_all)
@@ -138,5 +128,5 @@ create_model_summary_df <- function(model_all) {
 
 # Usage
 model_all_summary_df <- create_model_summary_df(model_all)
-write.csv(model_all_summary_df, "/home/a2shamso/projects/def-m2nagapp/a2shamso/pr_classification/model_all_df.csv", row.names = FALSE)
+write.csv(model_all_summary_df, "/home/a2shamso/projects/def-m2nagapp/a2shamso/pr_classification/model_all_df_wn.csv", row.names = FALSE)
 
