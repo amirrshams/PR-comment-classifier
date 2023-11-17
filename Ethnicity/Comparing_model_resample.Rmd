@@ -26,7 +26,7 @@ library(lmerTest)
 library(e1071)
 library(ggplot2)
 ```
-
+# Loading the data
 ```{r}
 df_nonmerged <- read_csv("/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Dataset/Dataset/Non_Merged/Sample/temp/Sample_15000_manual.csv")
 df_merged <- read_csv("/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Dataset/Dataset/Merged/pr_merged_final_April_2023.csv")
@@ -715,7 +715,7 @@ preprocess_data_norm <- function(data){
   data$perc_external_contribs<-scale(log(data$perc_external_contribs +1))
   data$pr_lines_changed<-as.integer(data$pr_lines_changed)
   data$pr_lines_changed<-scale(log(data$pr_lines_changed +1))
-                                      
+
 
   data$prs_main_team_member<-factor(data$prs_main_team_member,levels=c(0,1))
   data$prs_watched_repo<-factor(data$prs_watched_repo,levels=c(0,1))
@@ -761,6 +761,58 @@ df_comp_factored <- preprocess_data_norm(df_comp)
 
 
 ```
+# combined normalization
+```{r}
+preprocess_data_norm_test <- function(data) {
+  # Convert status to factor
+  data$status <- factor(data$status, levels = c("merged", "not-merged"))
+
+  # List of numeric variables to apply log transformation and robust scaling
+  numeric_vars <- c("comments_counts", "commit_counts", "prs_experience", "prs_succ_rate", "prs_popularity", "prs_tenure_mnth", "repo_pr_tenure_mnth", "repo_pr_popularity", "repo_pr_team_size", "perc_external_contribs", "pr_lines_changed")
+
+  # Apply log transformation and robust scaling
+  for (var in numeric_vars) {
+    # Log transformation (adding 1 to avoid log(0))
+    data[[var]]<-as.integer(data[[var]])
+    #data[[var]] <- scale(log(data[[var]] + 1))
+    
+    # Calculate median and IQR for robust scaling
+    #median_val <- median(data[[var]], na.rm = TRUE)
+    #iqr_val <- IQR(data[[var]], na.rm = TRUE)
+
+    # Perform robust scaling
+    #data[[var]] <- (data[[var]] - median_val) / iqr_val
+    
+    #z-score
+    #data[[var]] <- (data[[var]] - mean(data[[var]], na.rm = TRUE)) / sd(data[[var]], na.rm = TRUE)
+    
+    #min-max
+    #data[[var]] <- (data[[var]] - min(data[[var]], na.rm = TRUE)) / (max(data[[var]], na.rm = TRUE) - min(data[[var]], na.rm = TRUE))
+  
+    #mean
+    #data[[var]] <- (data[[var]] - mean(data[[var]], na.rm = TRUE)) / (max(data[[var]], na.rm = TRUE) - min(data[[var]], na.rm = TRUE))
+    
+    #square root
+    #data[[var]] <- sqrt(data[[var]])
+
+  }
+
+  # Convert binary variables to factors
+  binary_vars <- c("prs_main_team_member", "prs_watched_repo", "prs_followed_pri", "intra_branch", "pr_files_changed")
+  for (var in binary_vars) {
+    data[[var]] <- factor(data[[var]], levels = c(0, 1))
+  }
+
+  return(data)
+}
+
+df_nonmerged_factor <- preprocess_data_norm_test(df_nonmerged)
+
+df_merged_factored <- preprocess_data_norm_test(df_merged)
+
+df_comp_factored <- preprocess_data_norm_test(df_comp)
+```
+
 
 # Getting the summary as a dataframe
 ```{r}
@@ -843,6 +895,12 @@ car::vif(model_unn)
 
 ```
 
+```{r}
+#doing this after doing other things
+df_nonmerged_factor <- preprocess_data_norm_test(df_nonmerged)
+
+```
+
 ### Unnecessary
 ```{r}
 
@@ -867,7 +925,7 @@ unique_repo_ids <- unique(df_nonmerged_factor_unn$repo_id)
 df_merged_factored_unn <- sample_merged_data_15k[sample_merged_data_15k$repo_id %in% unique_repo_ids, ]
 
 
-formula <- status ~ comments_counts + commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~ comments_counts + commit_counts + prs_experience + prs_popularity + prs_followed_pri + prs_succ_rate + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 #formula <- status ~ comments_counts + commit_counts  + prs_popularity + prs_followed_pri + prs_watched_repo + prs_main_team_member + repo_pr_popularity + repo_pr_team_size + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 
  
@@ -930,7 +988,7 @@ unique_repo_ids <- unique(df_nonmerged_factor_qua$repo_id)
 df_merged_factored_qua <- sample_merged_data_15k[sample_merged_data_15k$repo_id %in% unique_repo_ids, ]
 
 
-formula <- status ~  comments_counts + commit_counts  + prs_experience + prs_succ_rate + prs_followed_pri + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~ comments_counts + commit_counts + prs_experience + prs_popularity + prs_followed_pri + prs_succ_rate + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 #formula <- status ~ comments_counts + commit_counts  + prs_popularity + prs_followed_pri + prs_watched_repo + prs_main_team_member + repo_pr_popularity + repo_pr_team_size + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 
 
@@ -998,8 +1056,7 @@ unique_repo_ids <- unique(df_nonmerged_factor_res$repo_id)
 df_merged_factored_res <- sample_merged_data_15k[sample_merged_data_15k$repo_id %in% unique_repo_ids, ]
 
 
-formula <- status ~  comments_counts + commit_counts  + prs_experience + prs_followed_pri + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
-
+formula <- status ~ comments_counts + commit_counts + prs_experience + prs_popularity + prs_followed_pri + prs_succ_rate + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 #formula <- status ~ comments_counts + commit_counts  + prs_popularity + prs_followed_pri + prs_watched_repo + prs_main_team_member + repo_pr_popularity + repo_pr_team_size + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 
 sample_size <- nrow(df_nonmerged_factor_res)
@@ -1062,8 +1119,7 @@ unique_repo_ids <- unique(df_nonmerged_factor_rep$repo_id)
 df_merged_factored_rep <- sample_merged_data_15k[sample_merged_data_15k$repo_id %in% unique_repo_ids, ]
 
 
-formula <- status ~  comments_counts + commit_counts + prs_followed_pri  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
-#formula <- status ~ comments_counts + commit_counts  + prs_popularity + prs_followed_pri + prs_watched_repo + prs_main_team_member + repo_pr_popularity + repo_pr_team_size + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~ comments_counts + commit_counts + prs_experience + prs_popularity + prs_followed_pri + prs_succ_rate + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)#formula <- status ~ comments_counts + commit_counts  + prs_popularity + prs_followed_pri + prs_watched_repo + prs_main_team_member + repo_pr_popularity + repo_pr_team_size + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 
 
 sample_size <- nrow(df_nonmerged_factor_rep)
@@ -1126,8 +1182,7 @@ unique_repo_ids <- unique(df_nonmerged_factor_dup$repo_id)
 df_merged_factored_dup <- sample_merged_data_15k[sample_merged_data_15k$repo_id %in% unique_repo_ids, ]
 
 
-formula <- status ~  comments_counts + commit_counts + prs_followed_pri  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
-#formula <- status ~ comments_counts + commit_counts  + prs_popularity + prs_followed_pri + prs_watched_repo + prs_main_team_member + repo_pr_popularity + repo_pr_team_size + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~ comments_counts + commit_counts + prs_experience + prs_popularity + prs_followed_pri + prs_succ_rate + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)#formula <- status ~ comments_counts + commit_counts  + prs_popularity + prs_followed_pri + prs_watched_repo + prs_main_team_member + repo_pr_popularity + repo_pr_team_size + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 
 
 sample_size <- nrow(df_nonmerged_factor_dup)
@@ -1197,8 +1252,7 @@ unique_repo_ids <- unique(df_nonmerged_factor_mc$repo_id)
 df_merged_factored_mc <- sample_merged_data_15k[sample_merged_data_15k$repo_id %in% unique_repo_ids, ]
 
 
-formula <- status ~  comments_counts + commit_counts + prs_followed_pri + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
-
+formula <- status ~ comments_counts + commit_counts + prs_experience + prs_popularity + prs_followed_pri + prs_succ_rate + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 #formula <- status ~ comments_counts + commit_counts  + prs_popularity + prs_followed_pri + prs_watched_repo + prs_main_team_member + repo_pr_popularity + repo_pr_team_size + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 
 sample_size <- nrow(df_nonmerged_factor_mc)
@@ -1219,7 +1273,7 @@ print('VIF:')
 car::vif(model_mc)
 ```
 ```{r}
-formula <- status ~  comments_counts + commit_counts +prs_followed_pri + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member  +repo_pr_tenure_mnth+ perc_external_contribs + pr_files_changed  + intra_branch + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~  comments_counts + commit_counts +prs_followed_pri + prs_experience +prs_succ_rate +prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member  +repo_pr_tenure_mnth+ perc_external_contribs + pr_files_changed  + intra_branch + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 #formula <- status ~ comments_counts + commit_counts  + prs_popularity + prs_followed_pri + prs_watched_repo + prs_main_team_member + repo_pr_tenure_mnth + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 model_mc <- glmer(formula, data = combined_data_mc, family = binomial,
                     control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
@@ -1269,8 +1323,7 @@ unique_repo_ids <- unique(df_nonmerged_factor_sta$repo_id)
 df_merged_factored_sta <- sample_merged_data_15k[sample_merged_data_15k$repo_id %in% unique_repo_ids, ]
 
 
-formula <- status ~  comments_counts + commit_counts + prs_followed_pri  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
-#formula <- status ~ comments_counts + commit_counts  + prs_popularity + prs_followed_pri + prs_watched_repo + prs_main_team_member + repo_pr_popularity + repo_pr_team_size + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~ comments_counts + commit_counts + prs_experience + prs_popularity + prs_followed_pri + prs_succ_rate + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)#formula <- status ~ comments_counts + commit_counts  + prs_popularity + prs_followed_pri + prs_watched_repo + prs_main_team_member + repo_pr_popularity + repo_pr_team_size + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 
 
 sample_size <- nrow(df_nonmerged_factor_sta)
@@ -1292,7 +1345,7 @@ car::vif(model_sta)
 ```
 
 ```{r}
-formula <- status ~  comments_counts + commit_counts + prs_followed_pri  + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~  comments_counts + commit_counts + prs_followed_pri  + prs_experience + prs_succ_rate +prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 
 model_sta <- glmer(formula, data = combined_data_sta, family = binomial,
                     control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
@@ -1339,8 +1392,7 @@ unique_repo_ids <- unique(df_nonmerged_factor_nc$repo_id)
 df_merged_factored_nc <- sample_merged_data_15k[sample_merged_data_15k$repo_id %in% unique_repo_ids, ]
 
 
-formula <- status ~  commit_counts + prs_followed_pri + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
-#formula <- status ~ commit_counts  + prs_popularity + prs_followed_pri + prs_watched_repo + prs_main_team_member + repo_pr_popularity + repo_pr_team_size + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~ comments_counts + commit_counts + prs_experience + prs_popularity + prs_followed_pri + prs_succ_rate + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)#formula <- status ~ commit_counts  + prs_popularity + prs_followed_pri + prs_watched_repo + prs_main_team_member + repo_pr_popularity + repo_pr_team_size + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 
 
 sample_size <- nrow(df_nonmerged_factor_nc)
@@ -1402,8 +1454,7 @@ unique_repo_ids <- unique(df_nonmerged_factor_nr$repo_id)
 df_merged_factored_nr <- sample_merged_data_15k[sample_merged_data_15k$repo_id %in% unique_repo_ids, ]
 
 
-formula <- status ~  comments_counts + commit_counts + prs_followed_pri + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
-#formula <- status ~ comments_counts + commit_counts  + prs_popularity + prs_followed_pri + prs_watched_repo + prs_main_team_member + repo_pr_popularity + repo_pr_team_size + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~ comments_counts + commit_counts + prs_experience + prs_popularity + prs_followed_pri + prs_succ_rate + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)#formula <- status ~ comments_counts + commit_counts  + prs_popularity + prs_followed_pri + prs_watched_repo + prs_main_team_member + repo_pr_popularity + repo_pr_team_size + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 
 
 sample_size <- nrow(df_nonmerged_factor_nr)
@@ -1474,8 +1525,7 @@ unique_repo_ids <- unique(df_nonmerged_factor_suc$repo_id)
 df_merged_factored_suc <- sample_merged_data_15k[sample_merged_data_15k$repo_id %in% unique_repo_ids, ]
 
 
-formula <- status ~  comments_counts + commit_counts + prs_followed_pri + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
-#formula <- status ~ comments_counts + commit_counts  + prs_popularity + prs_followed_pri + prs_watched_repo + prs_main_team_member + repo_pr_popularity + repo_pr_team_size + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~ comments_counts + commit_counts + prs_experience + prs_popularity + prs_followed_pri + prs_succ_rate + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)#formula <- status ~ comments_counts + commit_counts  + prs_popularity + prs_followed_pri + prs_watched_repo + prs_main_team_member + repo_pr_popularity + repo_pr_team_size + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 
 
 sample_size <- nrow(df_nonmerged_factor_suc)
@@ -1521,6 +1571,12 @@ hist(df_nonmerged_factor$comments_counts, main = "Distribution of Comments Count
 
 ```
 
+```{r}
+df_nonmerged_factor <- preprocess_data_norm(df_nonmerged)
+
+df_merged_factored <- preprocess_data_norm(df_merged)
+
+```
 
 ```{r}
 set.seed(46)
@@ -1528,15 +1584,17 @@ set.seed(46)
 #df_nonmerged_factor <- preprocess_data_norm(df_nonmerged)
 
 #df_merged_factored <- preprocess_data_norm(df_merged)
+#df_nonmerged_factor <- df_nonmerged_factor[df_nonmerged_factor$manual_analysis != 'Successful', ]
 
 df_nonmerged_factor <- df_nonmerged_factor[, !colnames(df_nonmerged_factor) %in% "manual_analysis"]
 df_merged_factored <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
 
 
-unique_repo_ids <- unique(df_nonmerged_factor$repo_id)
+
+unique_repo_ids_sampled <- unique(df_nonmerged_factor$repo_id)
 
 # Filtering the merged pull requests to keep only those with repo_ids in unique_repo_ids
-df_merged_factored <- df_merged_factored[df_merged_factored$repo_id %in% unique_repo_ids, ]
+df_merged_factored <- df_merged_factored[df_merged_factored$repo_id %in% unique_repo_ids_sampled, ]
 
 
 sample_size <- nrow(df_nonmerged_factor)
@@ -1546,13 +1604,52 @@ sample_merged_data_15k <- df_merged_factored[indices, ]
 
 combined_data <- rbind(df_nonmerged_factor, sample_merged_data_15k)
 
-formula <- status ~  comments_counts + commit_counts + prs_experience  + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + prs_followed_pri + perc_external_contribs + intra_branch +pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+
+formula <- status ~  comments_counts + commit_counts + prs_experience + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + prs_succ_rate + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + prs_followed_pri + perc_external_contribs + intra_branch +pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 
 model_labeled <- glmer(formula, data = combined_data, family = binomial,
                     control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
 
 
 ```
+```{r}
+#model withough normalizing
+
+set.seed(46)
+
+#df_nonmerged_factor <- preprocess_data_norm(df_nonmerged)
+
+#df_merged_factored <- preprocess_data_norm(df_merged)
+#df_nonmerged_factor <- df_nonmerged_factor[df_nonmerged_factor$manual_analysis != 'Successful', ]
+
+df_nonmerged_factor <- df_nonmerged_factor[, !colnames(df_nonmerged_factor) %in% "manual_analysis"]
+df_merged_factored <- df_merged_factored[, !colnames(df_merged_factored) %in% "checked"]
+
+
+
+unique_repo_ids_sampled <- unique(df_nonmerged_factor$repo_id)
+
+# Filtering the merged pull requests to keep only those with repo_ids in unique_repo_ids
+df_merged_factored <- df_merged_factored[df_merged_factored$repo_id %in% unique_repo_ids_sampled, ]
+
+
+sample_size <- nrow(df_nonmerged_factor)
+
+indices <- sample(1:nrow(df_merged_factored), size = sample_size, replace = TRUE)
+sample_merged_data_15k <- df_merged_factored[indices, ]
+
+combined_data <- rbind(df_nonmerged_factor, sample_merged_data_15k)
+
+
+formula <- status ~  comments_counts + commit_counts + prs_experience + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + prs_succ_rate + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + prs_followed_pri + perc_external_contribs + intra_branch +pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+
+model_labeled <- glmer(formula, data = combined_data, family = binomial,
+                    control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
+
+
+```
+
+
 
 ```{r}
 model_summary <- summary(model_labeled)
@@ -1572,6 +1669,27 @@ car::vif(model_labeled)
 model_labeled_df <- create_model_summary_df(model_labeled)
 write.csv(model_labeled_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary/model_labeled_df.csv", row.names = FALSE)
 
+
+```
+
+```{r}
+write.csv(df_comp_factored, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Normalized_data/all_data.csv", row.names = FALSE)
+write.csv(combined_data, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Normalized_data/sampled_data.csv", row.names = FALSE)
+
+```
+### Building model of all_data only with repos in non_merged
+
+
+```{r}
+df_comp_factored <- preprocess_data_norm(df_comp)
+
+```
+
+```{r}
+df_comp_factored_filtered<- df_comp_factored[df_comp_factored$repo_id %in% unique_repo_ids_sampled, ]
+formula <- status ~  comments_counts + commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + prs_followed_pri + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+
+#model_alldata <- glmer(formula, data = df_comp_factored_filtered, family = binomial, control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
 
 ```
 
