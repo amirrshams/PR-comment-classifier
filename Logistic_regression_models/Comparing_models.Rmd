@@ -70,6 +70,14 @@ df_eth_nonmerged <- anti_join(df_nonmerged, df_noneth_nonmerged, by = "pr_id" )
 
 ```
 
+```{r}
+length(unique(df_10000_sample$repo_id))
+```
+
+```{r}
+
+```
+
 ### Dropping the columns (depricated)
 
 ```{r}
@@ -1035,7 +1043,7 @@ write.csv(model_unn_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-Univers
 ### Unnecessary with ratio sampling
 
 ```{r}
-formula <- status ~ comments_counts + commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs +intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~  commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs +intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 
 
 results_unn_ratio <- build_model_by_category("Unnecessary", df_10000_sample_factored, df_comp_factored, df_merged_factored, formula)
@@ -1063,7 +1071,7 @@ table(combined_data_unn_ratio$status)
 ```
 ```{r}
 model_unn_ratio_df <- create_model_summary_df(model_unn_ratio)
-write.csv(model_unn_ratio_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary_Jan_2024/Ratioed/model_unn_ratio_df.csv", row.names = FALSE)
+write.csv(model_unn_ratio_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary_Feb_2024/model_unn_ratio_wcc_df.csv", row.names = FALSE)
 
 ```
 
@@ -1149,7 +1157,7 @@ write.csv(model_qua_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-Univers
 ### Quality with ratio sampling
 
 ```{r}
-formula <- status ~ comments_counts + commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs +intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~  commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs +intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 
 
 results_qua_ratio <- build_model_by_category("Quality", df_10000_sample_factored, df_comp_factored, df_merged_factored, formula)
@@ -1179,7 +1187,7 @@ print(odds_ratios_qua_ratio)
 
 ```{r}
 model_qua_ratio_df <- create_model_summary_df(model_qua_ratio)
-write.csv(model_qua_ratio_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary_Jan_2024/Ratioed/model_qua_ratio_df.csv", row.names = FALSE)
+write.csv(model_qua_ratio_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary_Feb_2024/model_qua_ratio_df.csv", row.names = FALSE)
 ```
 
 
@@ -1261,7 +1269,7 @@ write.csv(model_res_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-Univers
 
 ### Resolved with ratio sampling
 ```{r}
-formula <- status ~ comments_counts + commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs +intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~  commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs +intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 
 
 results_res_ratio <- build_model_by_category("Resolved", df_10000_sample_factored, df_comp_factored, df_merged_factored, formula)
@@ -1291,7 +1299,7 @@ print(odds_ratios_res_ratio)
 
 ```{r}
 model_res_ratio_df <- create_model_summary_df(model_res_ratio)
-write.csv(model_res_ratio_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary_Jan_2024/Ratioed/model_res_ratio_df.csv", row.names = FALSE)
+write.csv(model_res_ratio_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary_Feb_2024/model_res_ratio_df.csv", row.names = FALSE)
 ```
 
 ### Replaced with 1:1 sampling
@@ -1370,7 +1378,7 @@ write.csv(model_rep_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-Univers
 
 ### Replaced with ratio sampling
 ```{r}
-formula <- status ~ comments_counts + commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + perc_external_contribs +intra_branch + (1 | repo_id) + (1 | author_id)
+formula <- status ~ commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + perc_external_contribs +intra_branch + (1 | repo_id) + (1 | author_id)
 
 
 results_rep_ratio <- build_model_by_category("Replaced", df_10000_sample_factored, df_comp_factored, df_merged_factored, formula)
@@ -1399,7 +1407,7 @@ print(odds_ratios_rep_ratio)
 
 ```{r}
 model_rep_ratio_df <- create_model_summary_df(model_rep_ratio)
-write.csv(model_rep_ratio_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary_Jan_2024/Ratioed/model_rep_ratio_df.csv", row.names = FALSE)
+write.csv(model_rep_ratio_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary_Feb_2024/model_rep_ratio_df.csv", row.names = FALSE)
 ```
 
 
@@ -1478,7 +1486,7 @@ write.csv(model_dup_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-Univers
 
 ### Duplicate with ratio sampling
 ```{r}
-formula <- status ~ comments_counts + commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + + perc_external_contribs +intra_branch + (1 | repo_id) + (1 | author_id)
+formula <- status ~  commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + + perc_external_contribs +intra_branch + (1 | repo_id) + (1 | author_id)
 
 
 results_dup_ratio <- build_model_by_category("Duplicate", df_10000_sample_factored, df_comp_factored, df_merged_factored, formula)
@@ -1509,7 +1517,7 @@ print(odds_ratios_dup_ratio)
 
 ```{r}
 model_dup_ratio_df <- create_model_summary_df(model_dup_ratio)
-write.csv(model_dup_ratio_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary_Jan_2024/Ratioed/model_dup_ratio_df.csv", row.names = FALSE)
+write.csv(model_dup_ratio_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary_Feb_2024/model_dup_ratio_df.csv", row.names = FALSE)
 ```
 
 ### Merge Conflict with 1:1 sampling
@@ -1586,7 +1594,7 @@ write.csv(model_mc_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-Universi
 ```
 ### Merge Conflict with ratio sampling
 ```{r}
-formula <- status ~ comments_counts + commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + perc_external_contribs +intra_branch + (1 | repo_id) + (1 | author_id)
+formula <- status ~  commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + perc_external_contribs +intra_branch + (1 | repo_id) + (1 | author_id)
 
 
 results_mc_ratio <- build_model_by_category("Merge Conflict", df_10000_sample_factored, df_comp_factored, df_merged_factored, formula)
@@ -1617,7 +1625,7 @@ print(odds_ratios_mc_ratio)
 
 ```{r}
 model_mc_ratio_df <- create_model_summary_df(model_mc_ratio)
-write.csv(model_mc_ratio_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary_Jan_2024/Ratioed/model_mc_ratio_df.csv", row.names = FALSE)
+write.csv(model_mc_ratio_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary_Feb_2024/model_mc_ratio_wcc_df.csv", row.names = FALSE)
 ```
 
 ### Stale with 1:1 sampling
@@ -1695,7 +1703,7 @@ write.csv(model_sta_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-Univers
 
 ### Stale with ratio sampling
 ```{r}
-formula <- status ~ comments_counts + commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs +intra_branch + (1 | repo_id) + (1 | author_id)
+formula <- status ~ commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs +intra_branch + (1 | repo_id) + (1 | author_id)
 
 
 results_sta_ratio <- build_model_by_category("Stale", df_10000_sample_factored, df_comp_factored, df_merged_factored, formula)
@@ -1726,7 +1734,7 @@ print(odds_ratios_sta_ratio)
 
 ```{r}
 model_sta_ratio_df <- create_model_summary_df(model_sta_ratio)
-write.csv(model_sta_ratio_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary_Jan_2024/Ratioed/model_sta_ratio_df.csv", row.names = FALSE)
+write.csv(model_sta_ratio_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary_Feb_2024/model_sta_ratio_wcc_df.csv", row.names = FALSE)
 ```
 
 ### No Comment with 1:1 sampling
@@ -1905,7 +1913,7 @@ write.csv(model_nr_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-Universi
 
 ### No Reason with ratio sampling
 ```{r}
-formula <- status ~ comments_counts + commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs +intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~ commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs +intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 
 
 results_nr_ratio <- build_model_by_category("No Reason", df_10000_sample_factored, df_comp_factored, df_merged_factored, formula)
@@ -1936,7 +1944,7 @@ print(odds_ratios_nr_ratio)
 
 ```{r}
 model_nr_ratio_df <- create_model_summary_df(model_nr_ratio)
-write.csv(model_nr_ratio_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary_Jan_2024/Ratioed/model_nr_ratio_df.csv", row.names = FALSE)
+write.csv(model_nr_ratio_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary_Feb_2024/model_nr_ratio_wcc_df.csv", row.names = FALSE)
 ```
 
 ### Successful with 1:1 sampling
@@ -2004,7 +2012,7 @@ write.csv(model_suc_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-Univers
 
 ### Successful with ratio sampling
 ```{r}
-formula <- status ~ comments_counts + commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs +intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~ commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs +intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 
 
 results_suc_ratio <- build_model_by_category("Successful", df_10000_sample_factored, df_comp_factored, df_merged_factored, formula)
@@ -2034,12 +2042,12 @@ print(odds_ratios_suc_ratio)
 
 ```{r}
 model_suc_ratio_df <- create_model_summary_df(model_suc_ratio)
-write.csv(model_suc_ratio_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary_Jan_2024/Ratioed/model_suc_ratio_df.csv", row.names = FALSE)
+write.csv(model_suc_ratio_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary_Feb_2024/model_suc_ratio_wcc_df.csv", row.names = FALSE)
 ```
 
 ### Chaotic with ratio sampling
 ```{r}
-formula <- status ~ comments_counts + commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + perc_external_contribs +intra_branch  + (1 | repo_id) + (1 | author_id)
+formula <- status ~  commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + perc_external_contribs +intra_branch  + (1 | repo_id) + (1 | author_id)
 
 
 results_chao_ratio <- build_model_by_category("Chaotic", df_10000_sample_factored, df_comp_factored, df_merged_factored, formula)
@@ -2069,12 +2077,12 @@ print(odds_ratios_chao_ratio)
 
 ```{r}
 model_chao_ratio_df <- create_model_summary_df(model_chao_ratio)
-write.csv(model_chao_ratio_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary_Jan_2024/Ratioed/model_chao_ratio_df.csv", row.names = FALSE)
+write.csv(model_chao_ratio_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary_Feb_2024/model_chao_ratio_df.csv", row.names = FALSE)
 ```
 
 ### Not PR with ratio sampling
 ```{r}
-formula <- status ~ comments_counts + prs_succ_rate  + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth  + perc_external_contribs +intra_branch + (1 | repo_id) + (1 | author_id)
+formula <- status ~ prs_succ_rate  + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth  + perc_external_contribs +intra_branch + (1 | repo_id) + (1 | author_id)
 
 
 results_npr_ratio <- build_model_by_category("Not PR", df_10000_sample_factored, df_comp_factored, df_merged_factored, formula)
@@ -2105,14 +2113,14 @@ print(odds_ratios_npr_ratio)
 
 ```{r}
 model_npr_ratio_df <- create_model_summary_df(model_npr_ratio)
-write.csv(model_npr_ratio_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary_Jan_2024/Ratioed/model_npr_ratio_df.csv", row.names = FALSE)
+write.csv(model_npr_ratio_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary_Feb_2024/model_npr_ratio_wcc_df.csv", row.names = FALSE)
 ```
 
 #Sampling function based on the need
 ```{r}
 sample_by_ratio <- function(labeled_data, large_data, repo_id_col = "repo_id", status_col = "status") {
   # Calculate the count of merged and non-merged PRs per repo in the large data
-  
+  set.seed(46)
   #large_counts <- table(large_data[[repo_id_col]], large_data[[status_col]])
   large_counts_df <- as.data.frame(table(large_data[[repo_id_col]], large_data[[status_col]]))
   names(large_counts_df) <- c("repo_id", "status", "count")
@@ -2617,7 +2625,7 @@ df_comp_factored <- df_comp_factored[, !colnames(df_comp_factored) %in% "checked
 
 sampled_nonmerged_ratio_10000_sample <- sample_by_ratio(df_10000_sample_factored, df_comp_factored)
 
-formula <- status ~ comments_counts + commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs +intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
+formula <- status ~  commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_followed_pri + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + repo_pr_popularity + repo_pr_team_size + perc_external_contribs +intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 
 
 model_labeled_ratio_10000 <- glmer(formula, data = sampled_nonmerged_ratio_10000_sample, family = binomial,
@@ -2629,6 +2637,9 @@ model_labeled_ratio_10000 <- glmer(formula, data = sampled_nonmerged_ratio_10000
 ```{r}
 table(sampled_nonmerged_ratio_10000_sample$status)
 
+```
+```{r}
+write.csv(sampled_nonmerged_ratio_10000_sample, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Dataset/Dataset/sampled_dataset.csv")
 ```
 
 
@@ -2649,7 +2660,7 @@ car::vif(model_labeled_ratio_10000)
 ```{r}
 #getting the summary as a dataframe
 model_labeled_ratio_10000_sample_df <- create_model_summary_df(model_labeled_ratio_10000)
-write.csv(model_labeled_ratio_10000_sample_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary/model_labeled_ratio_10000_sample.csv", row.names = FALSE)
+write.csv(model_labeled_ratio_10000_sample_df, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Model_summary_Feb_2024/model_labeled_ratio_wccno_10000_sample.csv", row.names = FALSE)
 
 ```
 

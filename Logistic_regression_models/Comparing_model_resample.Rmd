@@ -593,9 +593,6 @@ preprocess_data <- function(data){
 ```
 
 
-# Removing highly correlated features
-
-
 # Building the model for merged pull requests from the same repositories of the rejected reason
 
 ### bootstrapped Model( depricated)
@@ -774,7 +771,7 @@ preprocess_data_norm_test <- function(data) {
   for (var in numeric_vars) {
     # Log transformation (adding 1 to avoid log(0))
     data[[var]]<-as.integer(data[[var]])
-    #data[[var]] <- scale(log(data[[var]] + 1))
+    data[[var]] <- scale(log(data[[var]] + 1))
     
     # Calculate median and IQR for robust scaling
     #median_val <- median(data[[var]], na.rm = TRUE)
@@ -1613,7 +1610,7 @@ model_labeled <- glmer(formula, data = combined_data, family = binomial,
 
 ```
 ```{r}
-#model withough normalizing
+#model without normalizing
 
 set.seed(46)
 
@@ -1677,7 +1674,7 @@ write.csv(df_comp_factored, "/Users/amirrshams/Library/CloudStorage/OneDrive-Uni
 write.csv(combined_data, "/Users/amirrshams/Library/CloudStorage/OneDrive-UniversityofWaterloo/Thesis/Paper_1/Results/Normalized_data/sampled_data.csv", row.names = FALSE)
 
 ```
-### Building model of all_data only with repos in non_merged
+### Building model of all_data only with repos in labeled
 
 
 ```{r}
@@ -1689,7 +1686,7 @@ df_comp_factored <- preprocess_data_norm(df_comp)
 df_comp_factored_filtered<- df_comp_factored[df_comp_factored$repo_id %in% unique_repo_ids_sampled, ]
 formula <- status ~  comments_counts + commit_counts + prs_experience + prs_succ_rate + prs_popularity + prs_watched_repo + prs_tenure_mnth + prs_main_team_member + repo_pr_tenure_mnth + prs_followed_pri + repo_pr_popularity + repo_pr_team_size + perc_external_contribs + intra_branch + pr_files_changed + pr_lines_changed + (1 | repo_id) + (1 | author_id)
 
-#model_alldata <- glmer(formula, data = df_comp_factored_filtered, family = binomial, control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
+model_alldata <- glmer(formula, data = df_comp_factored_filtered, family = binomial, control = glmerControl(optimizer = "nloptwrap", calc.derivs = FALSE, optCtrl = list(maxeval = 50)))
 
 ```
 
@@ -1698,7 +1695,6 @@ formula <- status ~  comments_counts + commit_counts + prs_experience + prs_succ
 ```{r}
 set.seed(46)
 
-# Assuming df_comp_factored has a column 'merged' to distinguish between merged and non-merged PRs
 df_nonmerged_alldata_factor <- df_comp_factored[df_comp_factored$status == 'not-merged', ]
 df_merged_alldata_factored <- df_comp_factored[df_comp_factored$status == 'merged', ]
 
